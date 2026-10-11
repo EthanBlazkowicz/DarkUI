@@ -315,20 +315,20 @@ namespace DarkUI.Controls
                     return true;
 
                 case NativeCustomDraw.CDDS_ITEMPREPAINT:
-                {
-                    bool sel = (tvcd.nmcd.uItemState & NativeCustomDraw.CDIS_SELECTED) != 0;
+                    {
+                        bool sel = (tvcd.nmcd.uItemState & NativeCustomDraw.CDIS_SELECTED) != 0;
 
-                    tvcd.clrTextBk = NativeCustomDraw.ToColorRef(sel ? Colors.BlueSelection : _tree.BackColor);
-                    tvcd.clrText = NativeCustomDraw.ToColorRef(sel ? Colors.SelectionText
-                        : Enabled ? _tree.ForeColor : Colors.DisabledText);
+                        tvcd.clrTextBk = NativeCustomDraw.ToColorRef(sel ? Colors.BlueSelection : _tree.BackColor);
+                        tvcd.clrText = NativeCustomDraw.ToColorRef(sel ? Colors.SelectionText
+                            : Enabled ? _tree.ForeColor : Colors.DisabledText);
 
-                    if (sel && MaskSelectedStateForDraw)
-                        tvcd.nmcd.uItemState &= ~NativeCustomDraw.CDIS_SELECTED;
+                        if (sel && MaskSelectedStateForDraw)
+                            tvcd.nmcd.uItemState &= ~NativeCustomDraw.CDIS_SELECTED;
 
-                    Marshal.StructureToPtr(tvcd, m.LParam, false);
-                    m.Result = (IntPtr)NativeCustomDraw.CDRF_DODEFAULT;
-                    return true;
-                }
+                        Marshal.StructureToPtr(tvcd, m.LParam, false);
+                        m.Result = (IntPtr)NativeCustomDraw.CDRF_DODEFAULT;
+                        return true;
+                    }
             }
             return false;
         }

@@ -251,11 +251,11 @@ namespace DarkUI.Controls
                 Math.Max(0, ClientSize.Width - _sidebarWidth),
                 ClientSize.Height);
 
-                _sidebar.Bounds = new Rectangle(
-                0,
-                0,
-                Math.Max(0, _sidebarWidth - 1),
-                ClientSize.Height);
+            _sidebar.Bounds = new Rectangle(
+            0,
+            0,
+            Math.Max(0, _sidebarWidth - 1),
+            ClientSize.Height);
 
             _sidebarDivider.Bounds = new Rectangle(_sidebar.Width, 0, 1, ClientSize.Height);
 

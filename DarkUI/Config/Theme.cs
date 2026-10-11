@@ -50,25 +50,25 @@ namespace DarkUI.Config
         public int Elevation { get; init; }
 
         // ── Backgrounds ──
-        public Color GreyBackground       { get; init; }
-        public Color HeaderBackground     { get; init; }
-        public Color MediumBackground     { get; init; }
-        public Color LightBackground      { get; init; }
-        public Color LighterBackground    { get; init; }
-        public Color LightestBackground   { get; init; }
-        public Color DarkBackground       { get; init; }
-        public Color BlueBackground       { get; init; }
-        public Color DarkBlueBackground   { get; init; }
+        public Color GreyBackground { get; init; }
+        public Color HeaderBackground { get; init; }
+        public Color MediumBackground { get; init; }
+        public Color LightBackground { get; init; }
+        public Color LighterBackground { get; init; }
+        public Color LightestBackground { get; init; }
+        public Color DarkBackground { get; init; }
+        public Color BlueBackground { get; init; }
+        public Color DarkBlueBackground { get; init; }
 
         // ── Borders ──
-        public Color LightBorder          { get; init; }
-        public Color DarkBorder           { get; init; }
-        public Color DarkBlueBorder       { get; init; }
-        public Color LightBlueBorder      { get; init; }
+        public Color LightBorder { get; init; }
+        public Color DarkBorder { get; init; }
+        public Color DarkBlueBorder { get; init; }
+        public Color LightBlueBorder { get; init; }
 
         // ── Text ──
-        public Color LightText            { get; init; }
-        public Color DisabledText         { get; init; }
+        public Color LightText { get; init; }
+        public Color DisabledText { get; init; }
 
         /// <summary>
         /// Optional foreground for content selected with <see cref="BlueSelection"/>.
@@ -78,15 +78,15 @@ namespace DarkUI.Config
         public Color? SelectionText { get; init; }
 
         // ── Accent / selection ──
-        public Color BlueHighlight        { get; init; }
-        public Color BlueSelection        { get; init; }
-        public Color GreyHighlight        { get; init; }
-        public Color GreySelection        { get; init; }
-        public Color DarkGreySelection    { get; init; }
-        public Color ActiveControl        { get; init; }
+        public Color BlueHighlight { get; init; }
+        public Color BlueSelection { get; init; }
+        public Color GreyHighlight { get; init; }
+        public Color GreySelection { get; init; }
+        public Color DarkGreySelection { get; init; }
+        public Color ActiveControl { get; init; }
 
         // ── Menu ──
-        public Color MenuItemToggledOnFill   { get; init; }
+        public Color MenuItemToggledOnFill { get; init; }
         public Color MenuItemToggledOnBorder { get; init; }
 
         // ── Semantic status accents (used by DarkToast) ──
@@ -94,7 +94,7 @@ namespace DarkUI.Config
         // themes may override them via init.
         public Color StatusSuccess { get; init; } = Color.FromArgb(120, 200, 90);
         public Color StatusWarning { get; init; } = Color.FromArgb(220, 180, 60);
-        public Color StatusError   { get; init; } = Color.FromArgb(220, 80, 80);
+        public Color StatusError { get; init; } = Color.FromArgb(220, 80, 80);
 
         public Theme(string name)
         {

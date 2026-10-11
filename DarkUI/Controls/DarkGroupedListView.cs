@@ -72,19 +72,25 @@ namespace DarkUI.Controls
             _base.CellBorderStyle = DataGridViewCellBorderStyle.None;
             _base.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
             {
-                BackColor = Colors.DarkBackground, ForeColor = Colors.LightText,
-                SelectionBackColor = Colors.DarkBackground, SelectionForeColor = Colors.LightText,
+                BackColor = Colors.DarkBackground,
+                ForeColor = Colors.LightText,
+                SelectionBackColor = Colors.DarkBackground,
+                SelectionForeColor = Colors.LightText,
                 Alignment = DataGridViewContentAlignment.MiddleCenter
             };
             _base.DefaultCellStyle = new DataGridViewCellStyle
             {
-                BackColor = Colors.GreyBackground, ForeColor = Colors.LightText,
-                SelectionBackColor = Colors.BlueSelection, SelectionForeColor = Colors.SelectionText
+                BackColor = Colors.GreyBackground,
+                ForeColor = Colors.LightText,
+                SelectionBackColor = Colors.BlueSelection,
+                SelectionForeColor = Colors.SelectionText
             };
             _base.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
             {
-                BackColor = Colors.GreyBackground, ForeColor = Colors.LightText,
-                SelectionBackColor = Colors.BlueSelection, SelectionForeColor = Colors.SelectionText
+                BackColor = Colors.GreyBackground,
+                ForeColor = Colors.LightText,
+                SelectionBackColor = Colors.BlueSelection,
+                SelectionForeColor = Colors.SelectionText
             };
             _base.ReadOnly = true;
             _base.AllowUserToAddRows = false;
@@ -359,17 +365,17 @@ namespace DarkUI.Controls
                         target = NextNonGroupRow(_base.RowCount, -1);
                         break;
                     case Keys.PageDown:
-                    {
-                        int page = Math.Max(1, _base.DisplayedRowCount(false) - 1);
-                        target = NextNonGroupRow(row, page);
-                        break;
-                    }
+                        {
+                            int page = Math.Max(1, _base.DisplayedRowCount(false) - 1);
+                            target = NextNonGroupRow(row, page);
+                            break;
+                        }
                     case Keys.PageUp:
-                    {
-                        int page = Math.Max(1, _base.DisplayedRowCount(false) - 1);
-                        target = NextNonGroupRow(row, -page);
-                        break;
-                    }
+                        {
+                            int page = Math.Max(1, _base.DisplayedRowCount(false) - 1);
+                            target = NextNonGroupRow(row, -page);
+                            break;
+                        }
                 }
 
                 if (target < 0) return;               // nothing found — let DGV behave

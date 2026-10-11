@@ -300,20 +300,20 @@ namespace DarkUI.Controls
                     return true;
 
                 case NativeCustomDraw.CDDS_ITEMPREPAINT_SUBITEM:
-                {
-                    int idx = (int)lvcd.nmcd.dwItemSpec;
-                    bool sel = idx >= 0 && idx < _list.Items.Count && _list.Items[idx].Selected;
+                    {
+                        int idx = (int)lvcd.nmcd.dwItemSpec;
+                        bool sel = idx >= 0 && idx < _list.Items.Count && _list.Items[idx].Selected;
 
-                    lvcd.clrTextBk = NativeCustomDraw.ToColorRef(sel ? Colors.BlueSelection : _list.BackColor);
-                    lvcd.clrText = NativeCustomDraw.ToColorRef(sel ? Colors.SelectionText : _list.ForeColor);
+                        lvcd.clrTextBk = NativeCustomDraw.ToColorRef(sel ? Colors.BlueSelection : _list.BackColor);
+                        lvcd.clrText = NativeCustomDraw.ToColorRef(sel ? Colors.SelectionText : _list.ForeColor);
 
-                    if (sel && MaskSelectedStateForDraw)
-                        lvcd.nmcd.uItemState &= ~NativeCustomDraw.CDIS_SELECTED;
+                        if (sel && MaskSelectedStateForDraw)
+                            lvcd.nmcd.uItemState &= ~NativeCustomDraw.CDIS_SELECTED;
 
-                    Marshal.StructureToPtr(lvcd, m.LParam, false);
-                    m.Result = (IntPtr)NativeCustomDraw.CDRF_DODEFAULT;
-                    return true;
-                }
+                        Marshal.StructureToPtr(lvcd, m.LParam, false);
+                        m.Result = (IntPtr)NativeCustomDraw.CDRF_DODEFAULT;
+                        return true;
+                    }
             }
             return false;
         }

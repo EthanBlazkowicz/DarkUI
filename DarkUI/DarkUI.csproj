@@ -5,6 +5,40 @@
     <LangVersion>latest</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>WFO1000</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    PS3BackupManager integration.
+
+    DarkUI is consumed as a project reference by PS3 Backup Manager, whose build treats warnings as
+    errors. The settings below only affect what *this* project reports while being built that way;
+    they change nothing about the DarkUI assembly produced.
+
+      EnableNETAnalyzers=false  DarkUI targets net10.0-windows and calls WinForms and GDI+ APIs on
+                                nearly every line, so CA1416 (platform compatibility) has thousands
+                                of findings here. They are correct and inactionable from the
+                                consuming repository.
+      MSB3277                   the Visual Studio design-time references below pull a second
+                                WindowsBase alongside the .NET 10 targeting pack's copy. It is a
+                                designer-host binding notice; nothing of it reaches a consumer's
+                                output. It cannot be resolved from either side.
+      CS0105, CS0108, CS0109,   the compiler's own findings in this library: a duplicate using
+      CS0114, CS1690            directive, and members that shadow a base member without `new`.
+                                They are all of the "this compiles and behaves as written, but say
+                                so out loud" kind. `-warnaserror` is a command-line switch, which
+                                sets a global property no project file can override, so the only
+                                way to keep a consuming build clean is to stop emitting them here.
+
+    Delete this property group to build DarkUI exactly as it is published; the consuming repository
+    will then print a note explaining the extra warnings.
+  -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <NoWarn>$(NoWarn);CS0105;CS0108;CS0109;CS0114;CS1690</NoWarn>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <AssemblyTitle>Dark UI</AssemblyTitle>

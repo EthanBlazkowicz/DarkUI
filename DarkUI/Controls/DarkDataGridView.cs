@@ -39,7 +39,7 @@ namespace DarkUI.Controls
                 BackColor = isHeader ? Colors.DarkBackground :
                         (isOdd ? Colors.GreyBackground : Colors.HeaderBackground),
                 ForeColor = Colors.LightText,
-                SelectionBackColor = isFocused && isHeader? Colors.DarkBackground : Colors.BlueSelection,
+                SelectionBackColor = isFocused && isHeader ? Colors.DarkBackground : Colors.BlueSelection,
                 SelectionForeColor = isFocused && isHeader ? Colors.LightText : Colors.SelectionText,
                 Alignment = isHeader ? DataGridViewContentAlignment.MiddleCenter : DataGridViewContentAlignment.NotSet,
                 Padding = isHeader ? new Padding(0) : new Padding(),

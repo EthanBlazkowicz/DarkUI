@@ -404,50 +404,50 @@ namespace DarkUI.Controls
             switch (uMsg)
             {
                 case WM_NCPAINT:
-                {
-                    // The native list paints its own blue focus outline around
-                    // the open dropdown — replace it with the theme border.
-                    IntPtr hdc = GetWindowDC(hWnd);
-                    try
                     {
-                        var rc = new RECT();
-                        GetWindowRect(hWnd, ref rc);
-                        int w = rc.Right - rc.Left;
-                        int h = rc.Bottom - rc.Top;
-                        int thickness = (GetWindowLong(hWnd, GWL_EXSTYLE).ToInt64() & WS_EX_CLIENTEDGE) != 0 ? 2 : 1;
-                        using (var g = Graphics.FromHdc(hdc))
-                        using (var pen = new Pen(_borderColor, thickness))
-                            g.DrawRectangle(pen, thickness / 2f, thickness / 2f, w - thickness, h - thickness);
+                        // The native list paints its own blue focus outline around
+                        // the open dropdown — replace it with the theme border.
+                        IntPtr hdc = GetWindowDC(hWnd);
+                        try
+                        {
+                            var rc = new RECT();
+                            GetWindowRect(hWnd, ref rc);
+                            int w = rc.Right - rc.Left;
+                            int h = rc.Bottom - rc.Top;
+                            int thickness = (GetWindowLong(hWnd, GWL_EXSTYLE).ToInt64() & WS_EX_CLIENTEDGE) != 0 ? 2 : 1;
+                            using (var g = Graphics.FromHdc(hdc))
+                            using (var pen = new Pen(_borderColor, thickness))
+                                g.DrawRectangle(pen, thickness / 2f, thickness / 2f, w - thickness, h - thickness);
+                        }
+                        finally
+                        {
+                            ReleaseDC(hWnd, hdc);
+                        }
+                        return (IntPtr)1;
                     }
-                    finally
-                    {
-                        ReleaseDC(hWnd, hdc);
-                    }
-                    return (IntPtr)1;
-                }
                 case WM_LBUTTONDOWN:
                 case WM_LBUTTONUP:
                 case WM_LBUTTONDBLCLK:
-                {
-                    // Leave the vertical scrollbar alone.
-                    var rc = new RECT();
-                    GetClientRect(hWnd, ref rc);
-                    int x = unchecked((short)((uint)(int)lParam & 0xFFFF));
-                    if (x >= rc.Right - SystemInformation.VerticalScrollBarWidth)
-                        break;
-
-                    long result = Native.SendMessage(hWnd, (uint)LB_ITEMFROMPOINT, IntPtr.Zero, lParam).ToInt64();
-                    uint index = (uint)result & 0xFFFF;
-                    uint outside = (uint)(result >> 16) & 0xFFFF;
-                    if (outside == 0 && index != 0xFFFF && index < Items.Count)
                     {
-                        if (uMsg == WM_LBUTTONDOWN)
-                            SetItemChecked((int)index, !GetItemChecked((int)index));
-                        return (IntPtr)1; // swallow — no selection commit, dropdown stays open
+                        // Leave the vertical scrollbar alone.
+                        var rc = new RECT();
+                        GetClientRect(hWnd, ref rc);
+                        int x = unchecked((short)((uint)(int)lParam & 0xFFFF));
+                        if (x >= rc.Right - SystemInformation.VerticalScrollBarWidth)
+                            break;
+
+                        long result = Native.SendMessage(hWnd, (uint)LB_ITEMFROMPOINT, IntPtr.Zero, lParam).ToInt64();
+                        uint index = (uint)result & 0xFFFF;
+                        uint outside = (uint)(result >> 16) & 0xFFFF;
+                        if (outside == 0 && index != 0xFFFF && index < Items.Count)
+                        {
+                            if (uMsg == WM_LBUTTONDOWN)
+                                SetItemChecked((int)index, !GetItemChecked((int)index));
+                            return (IntPtr)1; // swallow — no selection commit, dropdown stays open
+                        }
+                        // Dead area below the items → native close.
+                        break;
                     }
-                    // Dead area below the items → native close.
-                    break;
-                }
                 case WM_KEYDOWN:
                     if ((int)wParam == VK_SPACE && SelectedIndex >= 0)
                     {

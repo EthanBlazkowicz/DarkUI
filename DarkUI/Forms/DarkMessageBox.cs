@@ -141,14 +141,26 @@ namespace DarkUI.Forms
 
         private void CalculateSize()
         {
-            var width = 260; var height = 124;
+            const int baseWidth = 260;
+            const int baseHeight = 124;
+            const int contentMargin = 25;
+            const int contentTop = 9;
+
+            var width = baseWidth;
+            var height = baseHeight;
 
             // Reset form back to original size
             Size = new Size(width, height);
 
+            // Measure the message so we know whether it needs to wrap. A message that
+            // already spans multiple lines (explicit line breaks) must never be treated
+            // as a single line, otherwise the dialog will not grow to fit the text.
             lblText.Text = string.Empty;
             lblText.AutoSize = true;
             lblText.Text = _message;
+
+            var singleLineHeight = lblText.Font.Height + 2;
+            var isMultiLine = lblText.Height > singleLineHeight;
 
             // Set the minimum dialog size to whichever is bigger - the original size or the buttons.
             var footerWidth = TotalButtonSize + 15;
@@ -157,10 +169,11 @@ namespace DarkUI.Forms
             var minWidth = Math.Max(width, footerWidth);
 
             // Calculate the total size of the message
-            var totalWidth = lblText.Right + 25;
+            var totalWidth = lblText.Right + contentMargin;
 
-            // Make sure we're not making the dialog bigger than the maximum size
-            if (totalWidth < _maximumWidth)
+            // Make sure we're not making the dialog bigger than the maximum size.
+            // Only a genuine single line may use the compact layout.
+            if (totalWidth < _maximumWidth && !isMultiLine)
             {
                 // Width is smaller than the maximum width.
                 // This means we can have a single-line message box.
@@ -170,12 +183,14 @@ namespace DarkUI.Forms
             }
             else
             {
-                // Width is larger than the maximum width.
-                // Change the label size and wrap it.
+                // Width is larger than the maximum width, or the message is multi-line.
+                // Change the label size, wrap it and grow the dialog so the text never
+                // overlaps the footer buttons.
                 width = _maximumWidth;
-                var offsetHeight = Height - picIcon.Height;
+                var offsetHeight = height - picIcon.Height;
                 lblText.AutoUpdateHeight = true;
-                lblText.Width = width - lblText.Left - 25;
+                lblText.Width = width - lblText.Left - contentMargin;
+                lblText.Top = contentTop;
                 height = offsetHeight + lblText.Height;
             }
 
