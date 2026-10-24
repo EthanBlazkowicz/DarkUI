@@ -16,7 +16,7 @@ namespace DarkUI.Controls
             Padding = new Padding(2, 2, 2, 2);
             BorderStyle = BorderStyle.FixedSingle;
             DrawMode = DrawMode.OwnerDrawFixed;
-            ItemHeight = 18;
+            ItemHeight = DpiHelper.Scale(this, 18);
 
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
@@ -33,6 +33,14 @@ namespace DarkUI.Controls
             // The native listbox border is system-colored (blue when
             // focused) — paint it with the theme border instead.
             NativeFocusBorder.Apply(Handle);
+            ItemHeight = DpiHelper.Scale(this, 18);
+            BeginInvoke(() => ItemHeight = DpiHelper.Scale(this, 18));
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ItemHeight = DpiHelper.Scale(this, 18);
         }
 
         protected override void Dispose(bool disposing)
