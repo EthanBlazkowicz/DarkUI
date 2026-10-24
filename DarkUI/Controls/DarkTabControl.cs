@@ -297,19 +297,32 @@ namespace DarkUI.Controls
         {
             if (TabCount == 0 || !IsHandleCreated) return;
 
-            int maxW = 80; // minimum
+            // Scale every pixel constant by the real DPI ratio — the font
+            // measures correctly at high DPI, but fixed paddings/heights
+            // would leave tabs cramped and short on scaled displays.
+            float dpi = DeviceDpi / 96f;
+            int minW = (int)(80 * dpi);   // minimum width
+            int pad = (int)(32 * dpi);    // 16px padding each side
+            int height = (int)(28 * dpi); // tab row height
+            int maxW = minW;
             using (var g = CreateGraphics())
             {
                 for (int i = 0; i < TabCount; i++)
                 {
                     var sz = g.MeasureString(TabPages[i].Text, Font);
-                    int w = (int)sz.Width + 32; // 16px padding each side
+                    int w = (int)sz.Width + pad;
                     if (w > maxW) maxW = w;
                 }
             }
-            if (ItemSize.Width != maxW)
-                ItemSize = new Size(maxW, ItemSize.Height);
+            if (ItemSize.Width != maxW || ItemSize.Height != height)
+                ItemSize = new Size(maxW, height);
             Invalidate();
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            AutoSizeTabs();
         }
 
         #region State
@@ -468,9 +481,11 @@ namespace DarkUI.Controls
                     g.DrawRectangle(pen, tabRect.Left, tabRect.Top, tabRect.Width - 1, tabRect.Height - 1);
                 }
 
-                // Tab text
-                var textRect = new Rectangle(tabRect.Left + 8, tabRect.Top,
-                    tabRect.Width - 16, tabRect.Height);
+                // Tab text — inset scaled with DPI so the padding around the
+                // label grows proportionally on scaled displays.
+                int inset = (int)(8 * DeviceDpi / 96f);
+                var textRect = new Rectangle(tabRect.Left + inset, tabRect.Top,
+                    tabRect.Width - inset * 2, tabRect.Height);
                 using (var brush = new SolidBrush(text))
                 {
                     var sf = new StringFormat
