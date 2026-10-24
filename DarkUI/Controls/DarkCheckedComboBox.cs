@@ -138,7 +138,12 @@ namespace DarkUI.Controls
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 
             DrawMode = DrawMode.OwnerDrawFixed;
-            ItemHeight = 18;
+            // Scale with DPI: the ComboBox computes its closed height from
+            // ItemHeight, so a fixed 18 left the box 96-DPI sized on scaled
+            // displays (half-height next to everything else at 200%). The
+            // ctor runs before the control knows its real DPI — rescale in
+            // OnHandleCreated/OnDpiChangedAfterParent.
+            ItemHeight = DpiHelper.Scale(this, 18);
             FlatStyle = FlatStyle.Flat;
             DropDownStyle = ComboBoxStyle.DropDownList;
 
@@ -159,6 +164,16 @@ namespace DarkUI.Controls
         {
             base.OnHandleCreated(e);
             if (!DesignMode) ApplyThemeColors();
+            ItemHeight = DpiHelper.Scale(this, 18);
+            // At handle creation the child's DPI context may not have synced
+            // yet (DeviceDpi still reports 96), so re-apply once it has.
+            BeginInvoke(() => ItemHeight = DpiHelper.Scale(this, 18));
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ItemHeight = DpiHelper.Scale(this, 18);
         }
 
         protected override void Dispose(bool disposing)

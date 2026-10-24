@@ -118,7 +118,7 @@ namespace DarkUI.Controls
             // text + selection correctly; BackColor/ForeColor follow the theme.
             _tree.DrawMode = TreeViewDrawMode.Normal;
             _tree.Font = new Font("Segoe UI", 10F);
-            _tree.ItemHeight = 24;
+            _tree.ItemHeight = DpiHelper.Scale(this, 24);
             _tree.ShowPlusMinus = true;
 
             _tree.AfterSelect += (s, e) => AfterSelect?.Invoke(this, e);
@@ -338,6 +338,14 @@ namespace DarkUI.Controls
             base.OnHandleCreated(e);
             if (!DesignMode) ApplyThemeColors();
             _tree.HandleCreated += (s, ev) => BeginInvoke(UpdateScrollBarLayout);
+            _tree.ItemHeight = DpiHelper.Scale(this, 24);
+            BeginInvoke(() => _tree.ItemHeight = DpiHelper.Scale(this, 24));
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            _tree.ItemHeight = DpiHelper.Scale(this, 24);
         }
 
         protected override void OnEnabledChanged(EventArgs e)
