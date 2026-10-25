@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -74,6 +74,31 @@ namespace DarkUI.Controls
         {
             base.OnHandleCreated(e);
             if (!DesignMode) ApplyThemeColors();
+            ApplyDpiHeight();
+            // Re-apply once the owning form's DPI scale pass has landed.
+            BeginInvoke(ApplyDpiHeight);
+        }
+
+        // Designer label heights are 96-DPI design units; the scaled font on
+        // a high-DPI display is taller and would clip descenders. Measure the
+        // actual text and grow the label (upward, so the text's bottom edge —
+        // which sits next to the associated control — stays put).
+        private void ApplyDpiHeight()
+        {
+            if (_autoUpdateHeight || AutoSize || _isGrowing || !IsHandleCreated) return;
+            int min = Font.Height + Padding.Vertical;
+            if (Text.Length > 0)
+                min = Math.Max(min, TextRenderer.MeasureText(Text, Font).Height + Padding.Vertical + 2);
+            if (Height >= min) return;
+            int grown = min - Height;
+            Top = Math.Max(0, Top - grown);
+            Height = min;
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ApplyDpiHeight();
         }
 
         protected override void Dispose(bool disposing)
@@ -126,12 +151,14 @@ namespace DarkUI.Controls
         {
             base.OnTextChanged(e);
             ResizeLabel();
+            ApplyDpiHeight();
         }
 
         protected override void OnFontChanged(EventArgs e)
         {
             base.OnFontChanged(e);
             ResizeLabel();
+            ApplyDpiHeight();
         }
 
         protected override void OnSizeChanged(EventArgs e)

@@ -65,7 +65,22 @@ namespace DarkUI.Controls
         [Browsable(false)]
         public Rectangle ContentBounds => GetContentBounds();
 
-        internal int HeaderHeight => string.IsNullOrEmpty(_sectionHeader) ? 0 : DefaultHeaderHeight;
+        internal int HeaderHeight =>
+            string.IsNullOrEmpty(_sectionHeader) ? 0 : (int)Math.Round(DefaultHeaderHeight * DeviceDpi / 96f);
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            ApplyEffectivePadding();
+            // Re-apply once the owning form's DPI scale pass has landed.
+            BeginInvoke(ApplyEffectivePadding);
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ApplyEffectivePadding();
+        }
 
         public DarkSectionPanel()
         {

@@ -106,6 +106,16 @@ namespace DarkUI.Controls
             Invalidate(true);
         }
 
+        private int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            // Re-layout once the owning form's DPI scale pass has landed —
+            // it resizes this control without raising OnResize.
+            BeginInvoke(LayoutChildren);
+        }
+
         private void LayoutChildren()
         {
             if (_themeCombo == null) return;
@@ -120,21 +130,24 @@ namespace DarkUI.Controls
             if (_showLabels)
             {
                 _categoryLabel.Location = new Point(left, labelY);
-                left = _categoryLabel.Right + 6;
+                left = _categoryLabel.Right + Scale(6);
             }
 
-            int categoryWidth = Math.Clamp(Width / 3, 100, 160);
+            // The width clamp bounds are 96-DPI design units — scale them or
+            // the category combo renders half-width on scaled displays and
+            // the theme combo absorbs the difference (clipping its text).
+            int categoryWidth = Math.Clamp((int)Math.Round(Width / 3f), Scale(100), Scale(160));
             _categoryCombo.Bounds = new Rectangle(left, comboY, categoryWidth, _categoryCombo.Height);
-            left = _categoryCombo.Right + 12;
+            left = _categoryCombo.Right + Scale(12);
 
             if (_showLabels)
             {
                 _themeLabel.Location = new Point(left, labelY);
-                left = _themeLabel.Right + 6;
+                left = _themeLabel.Right + Scale(6);
             }
 
             _themeCombo.Bounds = new Rectangle(left, comboY,
-                Math.Max(90, Width - Padding.Right - left), _themeCombo.Height);
+                Math.Max(Scale(90), Width - Padding.Right - left), _themeCombo.Height);
         }
 
         private void PopulateThemes(bool applyFirstTheme = false)
