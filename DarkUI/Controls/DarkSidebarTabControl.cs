@@ -270,6 +270,78 @@ namespace DarkUI.Controls
             }
         }
 
+        // ── Anchor margin baseline ─────────────────────────────────────
+        // The owning form's DPI scale pass resizes page children directly
+        // and refreshes anchor margins only for the page that is visible
+        // at the time — children on hidden pages keep stale margins and
+        // come out mispositioned/overlapping when their page is shown.
+        // Snapshot each child's margins once (post-scale) and re-apply
+        // them when a page is selected.
+
+        private readonly Dictionary<Control, Rectangle> _anchorMargins = new();
+        private bool _anchorMarginsCaptured;
+
+        private void CaptureAnchorMargins()
+        {
+            if (_anchorMarginsCaptured || DesignMode || _pages == null) return;
+            _anchorMarginsCaptured = true;
+            foreach (SidebarPage page in _pages)
+            {
+                int pageWidth = Math.Max(1, page.ClientSize.Width);
+                int pageHeight = Math.Max(1, page.ClientSize.Height);
+                foreach (Control c in page.Controls)
+                    _anchorMargins[c] = new Rectangle(
+                        c.Left, c.Top,
+                        Math.Max(0, pageWidth - c.Right),
+                        Math.Max(0, pageHeight - c.Bottom));
+            }
+        }
+
+        private void ApplyAnchorMargins(SidebarPage page)
+        {
+            if (!_anchorMarginsCaptured || page is null) return;
+            int pageWidth = Math.Max(1, page.ClientSize.Width);
+            int pageHeight = Math.Max(1, page.ClientSize.Height);
+            foreach (Control c in page.Controls)
+            {
+                // Docked and AutoSize controls manage their own bounds.
+                if (c.Dock != DockStyle.None || c.AutoSize) continue;
+                if (!_anchorMargins.TryGetValue(c, out var m))
+                {
+                    _anchorMargins[c] = new Rectangle(
+                        c.Left, c.Top,
+                        Math.Max(0, pageWidth - c.Right),
+                        Math.Max(0, pageHeight - c.Bottom));
+                    continue;
+                }
+                int w = pageWidth - m.Left - m.Right;
+                int h = pageHeight - m.Top - m.Bottom;
+                if (w > 0 && h > 0)
+                    c.Bounds = new Rectangle(m.Left, m.Top, w, h);
+            }
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            // Defer until the owning form's DPI scale pass has fully landed,
+            // then snapshot every page child's anchor margins and re-apply
+            // them — hidden pages would otherwise come out mispositioned.
+            BeginInvoke(() =>
+            {
+                if (Disposing || !IsHandleCreated) return;
+                CaptureAnchorMargins();
+                if (SelectedPage != null) ApplyAnchorMargins(SelectedPage);
+            });
+        }
+
+        protected override void OnSelectedIndexChanged(EventArgs e)
+        {
+            base.OnSelectedIndexChanged(e);
+            CaptureAnchorMargins();
+            if (SelectedPage != null) ApplyAnchorMargins(SelectedPage);
+        }
+
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
