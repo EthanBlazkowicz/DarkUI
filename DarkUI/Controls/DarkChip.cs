@@ -21,6 +21,10 @@ namespace DarkUI.Controls
         private const int TextLeftPad = 9;
         private const int RightPad = 6;
 
+        // The constants above are 96-DPI design units; chips are created at
+        // runtime (post form scaling), so scale them here.
+        private int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+
         private bool _overClose;
 
         /// <summary>Raised when the × is clicked.</summary>
@@ -38,8 +42,8 @@ namespace DarkUI.Controls
             SetStyle(ControlStyles.Selectable, false);
             TabStop = false;
 
-            Height = ChipHeight;
-            Margin = new Padding(2);
+            Height = Scale(ChipHeight);
+            Margin = new Padding(Scale(2));
             // OPAQUE BackColor: a transparent BackColor makes WinForms take
             // the transparent-child path, which repaints every chip through
             // the panel whenever ANY chip is added or removed — the sibling
@@ -77,14 +81,14 @@ namespace DarkUI.Controls
 
         private void OnThemeChanged(object sender, EventArgs e) => Invalidate();
 
-        private Rectangle CloseZone => new Rectangle(Width - CloseZoneWidth, 0, CloseZoneWidth, Height);
+        private Rectangle CloseZone => new Rectangle(Width - Scale(CloseZoneWidth), 0, Scale(CloseZoneWidth), Height);
 
         protected override void OnTextChanged(EventArgs e)
         {
             base.OnTextChanged(e);
             // Pill auto-sizes to its text: text + left pad + × zone + right pad.
             var t = TextRenderer.MeasureText(Text, Font);
-            Width = t.Width + TextLeftPad + CloseZoneWidth + RightPad;
+            Width = t.Width + Scale(TextLeftPad + CloseZoneWidth + RightPad);
             Invalidate();
         }
 
@@ -140,7 +144,7 @@ namespace DarkUI.Controls
                 g.FillPath(b, path);
 
             // Text
-            var textRect = new Rectangle(TextLeftPad, 0, Width - TextLeftPad - CloseZoneWidth, Height);
+            var textRect = new Rectangle(Scale(TextLeftPad), 0, Width - Scale(TextLeftPad + CloseZoneWidth), Height);
             TextRenderer.DrawText(g, Text, Font, textRect, Enabled ? Colors.LightText : Colors.DisabledText,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
 
