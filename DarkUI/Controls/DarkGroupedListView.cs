@@ -178,7 +178,7 @@ namespace DarkUI.Controls
                     int hdrIdx = _base.Rows.Add();
                     _groupRows.Add(hdrIdx);
                     var hdr = _base.Rows[hdrIdx];
-                    hdr.Height = 26;
+                    hdr.Height = (int)Math.Round(26 * DeviceDpi / 96f);
                     hdr.DefaultCellStyle.BackColor = Colors.MediumBackground;
                     hdr.DefaultCellStyle.ForeColor = Colors.LightText;
                     hdr.DefaultCellStyle.SelectionBackColor = Colors.MediumBackground;
@@ -465,6 +465,22 @@ namespace DarkUI.Controls
         {
             base.OnHandleCreated(e);
             if (!DesignMode) ApplyThemeColors();
+            ApplyDpiRowMetrics();
+            // Re-apply once the owning form's DPI scale pass has landed.
+            BeginInvoke(ApplyDpiRowMetrics);
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ApplyDpiRowMetrics();
+        }
+
+        // Row and group-header heights are 96-DPI design units; scale them
+        // or rows render half-height on scaled displays.
+        private void ApplyDpiRowMetrics()
+        {
+            _base.RowTemplate.Height = (int)Math.Round(22 * DeviceDpi / 96f);
         }
 
         private void OnThemeChanged(object sender, EventArgs e) => ApplyThemeColors();
@@ -627,7 +643,7 @@ namespace DarkUI.Controls
                 int hdrIdx = _base.Rows.Add();
                 _groupRows.Add(hdrIdx);
                 var hdr = _base.Rows[hdrIdx];
-                hdr.Height = 26;
+                hdr.Height = (int)Math.Round(26 * DeviceDpi / 96f);
                 hdr.DefaultCellStyle.BackColor = Colors.MediumBackground;
                 hdr.DefaultCellStyle.ForeColor = Colors.LightText;
                 hdr.DefaultCellStyle.SelectionBackColor = Colors.MediumBackground;
