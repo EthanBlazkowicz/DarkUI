@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -306,7 +306,7 @@ namespace DarkUI.Controls
             var g = e.Graphics;
             var rect = new Rectangle(0, 0, ClientSize.Width, ClientSize.Height);
 
-            const int size = Consts.CheckBoxSize;
+            var size = Consts.CheckBoxSize;
 
             var textColor = Colors.LightText;
             var borderColor = Colors.LightText;

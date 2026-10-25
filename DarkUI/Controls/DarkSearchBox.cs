@@ -120,6 +120,8 @@ namespace DarkUI.Controls
         {
             base.OnHandleCreated(e);
             if (!DesignMode) ApplyThemeColors();
+            // Re-layout once any pending form-level DPI scaling has landed.
+            BeginInvoke(LayoutChildren);
         }
 
         // Propagate Enabled to the inner edit so it paints its disabled
@@ -171,23 +173,43 @@ namespace DarkUI.Controls
         private const int ClearW = 24;
         private const int Pad = 2;
 
+        private int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+
         private Rectangle ClearButtonRect =>
-            new Rectangle(Width - ClearW + 4, (Height - 16) / 2, 16, 16);
+            new Rectangle(Width - Scale(ClearW) + Scale(4), (Height - Scale(16)) / 2, Scale(16), Scale(16));
+
+        // Positions the icon strip and the inner edit for the current size
+        // and DPI. Re-run after every size/DPI change — the form-level DPI
+        // scaling pass resizes this UserControl and its children directly
+        // (via ScaleControl, which suppresses OnResize), so a layout computed
+        // for the 96-DPI design size would otherwise stay stale (and doubled).
+        private void LayoutChildren()
+        {
+            int iconW = Scale(IconW);
+            int clearW = Scale(ClearW);
+            // Inset 1px so the label never covers the box's themed border
+            // (a child paints over its parent — the border segments at the
+            // icon strip top/left/bottom would be erased).
+            _iconLabel.Bounds = new Rectangle(1, 1, iconW - 2, Height - 2);
+            // Box snug around the font line height, vertically centered —
+            // the native EDIT mis-aligns text when given slack room, so give
+            // it none: the text lands visually centered either way.
+            int boxH = Math.Max(Scale(16), (int)Math.Ceiling(_textBox.Font.GetHeight()) + 1);
+            int boxTop = Math.Max(0, (Height - boxH) / 2);
+            _textBox.Bounds = new Rectangle(iconW, boxTop,
+                Width - iconW - clearW - Scale(Pad), boxH);
+        }
 
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            // Inset 1px so the label never covers the box's themed border
-            // (a child paints over its parent — the border segments at the
-            // icon strip top/left/bottom would be erased).
-            _iconLabel.Bounds = new Rectangle(1, 1, IconW - 2, Height - 2);
-            // Box snug around the font line height, vertically centered —
-            // the native EDIT mis-aligns text when given slack room, so give
-            // it none: the text lands visually centered either way.
-            int boxH = Math.Max(16, (int)Math.Ceiling(_textBox.Font.GetHeight()) + 1);
-            int boxTop = Math.Max(0, (Height - boxH) / 2);
-            _textBox.Bounds = new Rectangle(IconW, boxTop,
-                Width - IconW - ClearW - Pad, boxH);
+            LayoutChildren();
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            LayoutChildren();
         }
 
         // ── clear-button input ────────────────────────────────────────

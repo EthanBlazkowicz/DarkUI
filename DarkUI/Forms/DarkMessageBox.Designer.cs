@@ -65,8 +65,8 @@ namespace DarkUI.Forms
             // 
             // DarkMessageBox
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(244, 86);
             this.Controls.Add(this.lblText);
             this.Controls.Add(this.picIcon);

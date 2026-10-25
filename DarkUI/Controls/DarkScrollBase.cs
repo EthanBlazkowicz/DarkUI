@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -139,7 +139,7 @@ namespace DarkUI.Controls
             if (HScrollBar.Maximum != ContentSize.Width)
                 HScrollBar.Maximum = ContentSize.Width;
 
-            const int scrollSize = Consts.ScrollBarSize;
+            var scrollSize = Consts.ScrollBarSize;
 
             VScrollBar.Location = new Point(ClientSize.Width - scrollSize, 0);
             VScrollBar.Size = new Size(scrollSize, ClientSize.Height);
@@ -184,7 +184,7 @@ namespace DarkUI.Controls
 
         private void SetVisibleSize()
         {
-            const int scrollSize = Consts.ScrollBarSize;
+            var scrollSize = Consts.ScrollBarSize;
 
             _visibleSize = new Size(ClientSize.Width, ClientSize.Height);
 

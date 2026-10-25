@@ -1,21 +1,44 @@
-﻿namespace DarkUI.Config
+using System;
+using System.Windows.Forms;
+
+namespace DarkUI.Config
 {
     public static class Consts
     {
-        public const int Padding = 10;
+        // These metrics were authored at 96 DPI. Scale them to the process
+        // DPI so custom-drawn controls keep their proportions on scaled
+        // displays (e.g. 4K at 200%). Evaluated once — single-DPI process.
+        private static readonly int _scale = GetScale();
 
-        public const int ScrollBarSize = 15;
-        public const int ArrowButtonSize = 15;
-        public const int MinimumThumbSize = 11;
+        private static int GetScale()
+        {
+            try
+            {
+                using var c = new Control();
+                return Math.Max(1, (int)Math.Round(c.DeviceDpi / 96f));
+            }
+            catch
+            {
+                return 1;
+            }
+        }
 
-        public const int CheckBoxSize = 12;
-        public const int RadioButtonSize = 12;
+        private static int S(int value) => value * _scale;
 
-        public const int ToolWindowHeaderSize = 25;
-        public const int DocumentTabAreaSize = 24;
-        public const int ToolWindowTabAreaSize = 21;
-        public const int MinimumRegionSize = 80;
+        public static int Padding => S(10);
 
-        public const bool DisableSingleDocumentTab = true;
+        public static int ScrollBarSize => S(15);
+        public static int ArrowButtonSize => S(15);
+        public static int MinimumThumbSize => S(11);
+
+        public static int CheckBoxSize => S(12);
+        public static int RadioButtonSize => S(12);
+
+        public static int ToolWindowHeaderSize => S(25);
+        public static int DocumentTabAreaSize => S(24);
+        public static int ToolWindowTabAreaSize => S(21);
+        public static int MinimumRegionSize => 80;
+
+        public static bool DisableSingleDocumentTab => true;
     }
 }

@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -502,7 +502,9 @@ namespace DarkUI.Controls
                 g.FillRectangle(b, _downArrowArea);
             }*/
 
-            // Up arrow
+            // Up arrow — drawn at native size, centered in the (DPI-scaled)
+            // arrow area. Stretching it to fill would over-enlarge the arrow
+            // compared to the reference proportions.
             var upIcon = _upArrowHot ? ScrollIcons.scrollbar_arrow_hot : ScrollIcons.scrollbar_arrow_standard;
 
             if (_upArrowClicked)
@@ -522,8 +524,8 @@ namespace DarkUI.Controls
             }
 
             g.DrawImage(upIcon,
-                                _upArrowArea.Left + _upArrowArea.Width / 2 - upIcon.Width / 2,
-                                _upArrowArea.Top + _upArrowArea.Height / 2 - upIcon.Height / 2);
+                                _upArrowArea.Left + (_upArrowArea.Width - upIcon.Width) / 2,
+                                _upArrowArea.Top + (_upArrowArea.Height - upIcon.Height) / 2);
 
             // Down arrow
             var downIcon = _downArrowHot ? ScrollIcons.scrollbar_arrow_hot : ScrollIcons.scrollbar_arrow_standard;
@@ -538,8 +540,8 @@ namespace DarkUI.Controls
                 downIcon.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
             g.DrawImage(downIcon,
-                                _downArrowArea.Left + _downArrowArea.Width / 2 - downIcon.Width / 2,
-                                _downArrowArea.Top + _downArrowArea.Height / 2 - downIcon.Height / 2);
+                                _downArrowArea.Left + (_downArrowArea.Width - downIcon.Width) / 2,
+                                _downArrowArea.Top + (_downArrowArea.Height - downIcon.Height) / 2);
 
             // Draw thumb
             if (!Enabled)

@@ -245,16 +245,20 @@ namespace DarkUI.Controls
         {
             base.OnLayout(e);
 
+            // _sidebarWidth is stored in 96-DPI design units (the designer
+            // serializes e.g. 140) — layout uses the DPI-scaled value.
+            int sidebarWidth = (int)Math.Round(_sidebarWidth * DeviceDpi / 96f);
+
             var pageBounds = new Rectangle(
-                _sidebarWidth,
+                sidebarWidth,
                 0,
-                Math.Max(0, ClientSize.Width - _sidebarWidth),
+                Math.Max(0, ClientSize.Width - sidebarWidth),
                 ClientSize.Height);
 
             _sidebar.Bounds = new Rectangle(
             0,
             0,
-            Math.Max(0, _sidebarWidth - 1),
+            Math.Max(0, sidebarWidth - 1),
             ClientSize.Height);
 
             _sidebarDivider.Bounds = new Rectangle(_sidebar.Width, 0, 1, ClientSize.Height);
@@ -264,6 +268,28 @@ namespace DarkUI.Controls
                 foreach (SidebarPage page in _pages)
                     page.Bounds = pageBounds;
             }
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            ApplyDpiMetrics();
+            // The child's DPI context settles shortly after handle creation.
+            BeginInvoke(ApplyDpiMetrics);
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ApplyDpiMetrics();
+        }
+
+        // Item heights and other fixed metrics follow the real DPI; a layout
+        // pass picks up the scaled sidebar width afterwards.
+        private void ApplyDpiMetrics()
+        {
+            _sidebar.ItemHeight = (int)Math.Round(22 * DeviceDpi / 96f);
+            PerformLayout();
         }
 
         #region Selection
@@ -276,7 +302,7 @@ namespace DarkUI.Controls
 
             _resizingSidebar = true;
             _resizeStartScreenX = MousePosition.X;
-            _resizeStartWidth = _sidebarWidth;
+            _resizeStartWidth = (int)Math.Round(_sidebarWidth * DeviceDpi / 96f);
             _sidebar.Capture = true;
             SidebarResizeStarted?.Invoke(this, EventArgs.Empty);
         }
@@ -292,11 +318,14 @@ namespace DarkUI.Controls
                 return;
             }
 
-            int maximum = Math.Max(60, ClientSize.Width - 60);
-            SidebarWidth = Math.Clamp(
+            int scale = DeviceDpi;
+            int minimum = (int)Math.Round(60f * scale / 96f);
+            int maximum = Math.Max(minimum, ClientSize.Width - minimum);
+            int physical = Math.Clamp(
                 _resizeStartWidth + MousePosition.X - _resizeStartScreenX,
-                60,
+                minimum,
                 maximum);
+            SidebarWidth = (int)Math.Round(physical * 96f / scale);
         }
 
         private void SidebarMouseUp(object sender, MouseEventArgs e)

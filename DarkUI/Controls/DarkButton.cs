@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -19,7 +19,10 @@ namespace DarkUI.Controls
         private bool _isDefault;
         private bool _spacePressed;
 
-        private const int _padding = Consts.Padding / 2;
+        // Design units (5 = half of the 96-DPI Consts.Padding): the owning
+        // form's DPI scaling scales Control.Padding itself — pre-scaling via
+        // Consts would double-scale and shrink the text area to nothing.
+        private const int _padding = 5;
         private int _imagePadding = 5; // Consts.Padding / 2
 
         #endregion
@@ -494,25 +497,13 @@ namespace DarkUI.Controls
 
                 if (Image != null)
                 {
-                    var stringFormat = new StringFormat
-                    {
-                        LineAlignment = StringAlignment.Center,
-                        Alignment = StringAlignment.Near,
-                        Trimming = StringTrimming.EllipsisCharacter
-                    };
-
-                    g.DrawString(Text, Font, b, modRect, stringFormat);
+                    TextRenderer.DrawText(g, Text, Font, modRect, textColor,
+                        TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
                 }
                 else
                 {
-                    var stringFormat = new StringFormat
-                    {
-                        LineAlignment = StringAlignment.Center,
-                        Alignment = StringAlignment.Center,
-                        Trimming = StringTrimming.EllipsisCharacter
-                    };
-
-                    g.DrawString(Text, Font, b, modRect, stringFormat);
+                    TextRenderer.DrawText(g, Text, Font, modRect, textColor,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
                 }
             }
         }

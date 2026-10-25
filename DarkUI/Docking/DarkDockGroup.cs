@@ -192,7 +192,7 @@ namespace DarkUI.Docking
 
             if (DockArea == DarkDockArea.Document)
             {
-                const int dropdownSize = Consts.DocumentTabAreaSize;
+                var dropdownSize = Consts.DocumentTabAreaSize;
                 _tabArea.DropdownRectangle = new Rectangle(_tabArea.ClientRectangle.Right - dropdownSize, 0, dropdownSize, dropdownSize);
             }
 
