@@ -410,7 +410,7 @@ namespace DarkUI.Controls
 
         // The drag-grip hit zone, in device pixels: scale it like every other
         // metric so the grip stays proportionally easy to grab at high DPI.
-        private static int SidebarResizeGripWidth => (int)Math.Round(6 * DeviceDpi / 96f);
+        private int SidebarResizeGripWidth => (int)Math.Round(6 * DeviceDpi / 96f);
 
         private void SyncSelection()
         {
