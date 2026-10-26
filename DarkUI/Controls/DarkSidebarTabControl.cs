@@ -335,6 +335,11 @@ namespace DarkUI.Controls
                 if (Disposing || !IsHandleCreated) return;
                 CaptureAnchorMargins();
                 if (SelectedPage != null) ApplyAnchorMargins(SelectedPage);
+                // Partial invalidation leaves stale pixels from the pre-scale
+                // layout on screen (stray text fragments, off-center arrows).
+                Invalidate(true);
+                foreach (SidebarPage page in _pages)
+                    page.Invalidate(true);
             });
         }
 
@@ -421,6 +426,7 @@ namespace DarkUI.Controls
             CaptureAnchorMargins();
             var page = idx >= 0 && idx < _pages.Count ? _pages[idx] : null;
             if (page != null) ApplyAnchorMargins(page);
+            page?.Invalidate(true);
             SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
         }
 
