@@ -81,9 +81,20 @@ namespace DarkUI.Controls
             // Dock-fill children must fill the content area below the header
             // bar, not the whole client — base layout ignores the painted
             // header, so place them explicitly.
+            int contentTop = GetContentBounds().Top;
             foreach (Control c in Controls)
+            {
                 if (c.Dock == DockStyle.Fill)
                     c.Bounds = GetContentBounds();
+                // Top-docked children dock at the client top, straight over
+                // the painted header band (the base padding is deliberately
+                // empty — see the constructor). .NET's dock layout ignores
+                // Margin.Top for them, so pin the child to the content top
+                // here; this layout is the one that recomputes dock bounds,
+                // so the pin re-applies on every pass.
+                else if (c.Dock == DockStyle.Top && c.Top != contentTop)
+                    c.Top = contentTop;
+            }
         }
 
         public DarkSectionPanel()
