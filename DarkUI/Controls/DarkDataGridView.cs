@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.Collections;
 using System.ComponentModel;
@@ -157,6 +157,57 @@ namespace DarkUI.Controls
         {
             base.OnHandleCreated(e);
             if (!DesignMode) ApplyThemeColors();
+            CaptureDesignRowHeight();
+            ApplyDpiRowHeights();
+            // Re-apply once the owning form's DPI scale pass has landed.
+            if (!DesignMode && IsHandleCreated && !IsDisposed)
+                BeginInvoke(new Action(ApplyDpiRowHeights));
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            ApplyDpiRowHeights();
+        }
+
+        // ── DPI-aware data row heights ──
+        // The designer pins RowTemplate.Height in 96-DPI design units (23 in
+        // PS4PKGTool), and DataGridView then treats it as fixed device pixels:
+        // at 200% the font is twice as tall while rows stay 23 px, clipping
+        // every cell in half. Capture the design height before first display,
+        // then re-apply it scaled by the current DeviceDpi. Recomputation is
+        // absolute (never multiplies the live value), so repeated DPI moves
+        // stay idempotent. Grids that auto-size rows and group header rows
+        // manage their own heights and are left alone.
+        private int _designRowHeight = -1;
+
+        private void CaptureDesignRowHeight()
+        {
+            if (_designRowHeight < 0)
+                _designRowHeight = Math.Max(1, _base.RowTemplate.Height);
+        }
+
+        private void ApplyDpiRowHeights()
+        {
+            if (_designRowHeight < 0 || IsDisposed || _base.AutoSizeRowsMode != DataGridViewAutoSizeRowsMode.None)
+                return;
+
+            int desired = (int)Math.Round(_designRowHeight * DeviceDpi / 96f);
+            bool changed = false;
+            if (_base.RowTemplate.Height != desired)
+            {
+                _base.RowTemplate.Height = desired;
+                changed = true;
+            }
+            foreach (DataGridViewRow row in _base.Rows)
+            {
+                if (IsGroupRow(row) || row.Height == desired)
+                    continue;
+                row.Height = desired;
+                changed = true;
+            }
+            if (changed)
+                UpdateScrollBarLayout();
         }
 
         private void OnThemeChanged(object sender, EventArgs e) => ApplyThemeColors();
