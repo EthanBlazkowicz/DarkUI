@@ -29,7 +29,6 @@ namespace DarkUI.Controls
                     return;
 
                 _contentPadding = value;
-                ApplyEffectivePadding();
                 PerformLayout();
                 Invalidate();
             }
@@ -57,7 +56,6 @@ namespace DarkUI.Controls
                     return;
 
                 _sectionHeader = value;
-                ApplyEffectivePadding();
                 PerformLayout();
                 Invalidate();
             }
@@ -72,81 +70,20 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            ApplyEffectivePadding();
-            // Re-apply once the owning form's DPI scale pass has landed, then
-            // snapshot child anchor margins (post-scale) — padding changes re-
-            // base anchored children against the display rect and can drag
-            // them into the header bar at high DPI.
-            BeginInvoke(() =>
-            {
-                if (Disposing || !IsHandleCreated) return;
-                ApplyEffectivePadding();
-                CaptureChildAnchors();
-                ApplyChildAnchors();
-                // Partial invalidation leaves stale pixels from the pre-scale
-                // layout on screen (stray header-text fragments).
-                Invalidate(true);
-            });
-        }
-
-        protected override void OnDpiChangedAfterParent(EventArgs e)
-        {
-            base.OnDpiChangedAfterParent(e);
-            ApplyEffectivePadding();
+            // Partial invalidation leaves stale pixels from the pre-scale
+            // layout on screen (stray header-text fragments).
+            Invalidate(true);
         }
 
         protected override void OnLayout(LayoutEventArgs e)
         {
             base.OnLayout(e);
-            ApplyChildAnchors();
-        }
-
-        // ── Child anchor baseline ──────────────────────────────────────
-        // Children are positioned in designer coordinates that already
-        // account for the header; the anchored-child layout re-bases them
-        // against the padding-inset display rect whenever padding changes,
-        // which at high DPI drags them up into the header bar. Snapshot the
-        // anchor margins once (after the DPI scale settles) and re-apply.
-        private readonly Dictionary<Control, (AnchorStyles anchor, int l, int t, int r, int b)> _childAnchors = new();
-        private bool _childAnchorsCaptured;
-
-        private void CaptureChildAnchors()
-        {
-            if (_childAnchorsCaptured || DesignMode) return;
-            _childAnchorsCaptured = true;
-            int w = Math.Max(1, ClientSize.Width);
-            int h = Math.Max(1, ClientSize.Height);
+            // Dock-fill children must fill the content area below the header
+            // bar, not the whole client — base layout ignores the painted
+            // header, so place them explicitly.
             foreach (Control c in Controls)
-            {
-                if (c.Dock != DockStyle.None) continue;
-                _childAnchors[c] = (c.Anchor, c.Left, c.Top,
-                    Math.Max(0, w - c.Right), Math.Max(0, h - c.Bottom));
-            }
-        }
-
-        private void ApplyChildAnchors()
-        {
-            if (!_childAnchorsCaptured) return;
-            int w = Math.Max(1, ClientSize.Width);
-            int h = Math.Max(1, ClientSize.Height);
-            foreach (Control c in Controls)
-            {
-                if (c.Dock != DockStyle.None) continue;
-                if (!_childAnchors.TryGetValue(c, out var a)) continue;
-                int x = c.Left, y = c.Top, cw = c.Width, ch = c.Height;
-                bool left = (a.anchor & AnchorStyles.Left) != 0;
-                bool right = (a.anchor & AnchorStyles.Right) != 0;
-                bool top = (a.anchor & AnchorStyles.Top) != 0;
-                bool bottom = (a.anchor & AnchorStyles.Bottom) != 0;
-                if (left && right) { x = a.l; cw = Math.Max(0, w - a.l - a.r); }
-                else if (right) { x = Math.Max(0, w - a.r - cw); }
-                else if (left) { x = a.l; }
-                if (top && bottom) { y = a.t; ch = Math.Max(0, h - a.t - a.b); }
-                else if (bottom) { y = Math.Max(0, h - a.b - ch); }
-                else if (top) { y = a.t; }
-                var nb = new Rectangle(x, y, cw, ch);
-                if (c.Bounds != nb) c.Bounds = nb;
-            }
+                if (c.Dock == DockStyle.Fill)
+                    c.Bounds = GetContentBounds();
         }
 
         public DarkSectionPanel()
@@ -155,7 +92,11 @@ namespace DarkUI.Controls
                      ControlStyles.ResizeRedraw |
                      ControlStyles.UserPaint, true);
             base.Margin = new Padding(6);
-            ApplyEffectivePadding();
+            // base.Padding stays empty: Padding feeds the anchored-child
+            // layout's display rect, and a header-sized top term re-bases
+            // designer-positioned children into the header bar at high DPI.
+            // The header is painted; Dock-fill children are fitted to the
+            // content area in OnLayout via GetContentBounds().
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
 
@@ -169,10 +110,14 @@ namespace DarkUI.Controls
 
         internal Rectangle GetContentBounds()
         {
-            var left = BorderThickness + _contentPadding.Left;
-            var top = (HeaderHeight > 0 ? HeaderHeight : BorderThickness) + _contentPadding.Top;
-            var right = Math.Max(left, ClientSize.Width - BorderThickness - _contentPadding.Right);
-            var bottom = Math.Max(top, ClientSize.Height - BorderThickness - _contentPadding.Bottom);
+            // Content padding is authored in 96-DPI design units; scale it
+            // like every other metric.
+            double scale = DeviceDpi / 96.0;
+            int S(int v) => (int)Math.Round(v * scale);
+            var left = BorderThickness + S(_contentPadding.Left);
+            var top = (HeaderHeight > 0 ? HeaderHeight : BorderThickness) + S(_contentPadding.Top);
+            var right = Math.Max(left, ClientSize.Width - BorderThickness - S(_contentPadding.Right));
+            var bottom = Math.Max(top, ClientSize.Height - BorderThickness - S(_contentPadding.Bottom));
             return Rectangle.FromLTRB(left, top, right, bottom);
         }
 
@@ -286,22 +231,6 @@ namespace DarkUI.Controls
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             // Absorb event.
-        }
-
-        private void ApplyEffectivePadding()
-        {
-            // All terms in device units: the header height and the designer
-            // content padding scale with the real DPI. Mixed scaled/unscaled
-            // values made the display rect incoherent and dragged children
-            // (anchored layout re-bases against the padding-inset rect) up
-            // into the header bar.
-            double scale = DeviceDpi / 96.0;
-            int S(int v) => (int)Math.Round(v * scale);
-            base.Padding = new Padding(
-                BorderThickness + S(_contentPadding.Left),
-                (HeaderHeight > 0 ? HeaderHeight : BorderThickness) + S(_contentPadding.Top),
-                BorderThickness + S(_contentPadding.Right),
-                BorderThickness + S(_contentPadding.Bottom));
         }
 
         private static Color GetFocusedHeaderTextColor(Color background)
