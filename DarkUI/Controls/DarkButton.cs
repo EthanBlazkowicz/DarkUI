@@ -491,9 +491,16 @@ namespace DarkUI.Controls
 
             using (var b = new SolidBrush(textColor))
             {
+                // Vertical centering must span the full client height:
+                // subtracting the scaled padding shrank the text rect below
+                // the scaled font's line box (a 46 px button held a 26 px
+                // rect for a 32 px line at 200%), shaving ascenders and
+                // descenders — 'Expand All' lost its 'p'. The horizontal
+                // inset still keeps wide text off the borders.
                 var modRect = new Rectangle(rect.Left + textOffsetX + Padding.Left,
-                                            rect.Top + textOffsetY + Padding.Top, rect.Width - Padding.Horizontal,
-                                            rect.Height - Padding.Vertical);
+                                            rect.Top + textOffsetY,
+                                            rect.Width - Padding.Horizontal,
+                                            rect.Height);
 
                 if (Image != null)
                 {
