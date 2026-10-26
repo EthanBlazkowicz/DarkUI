@@ -324,6 +324,9 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
+            ApplyDpiMetrics();
+            // The child's DPI context settles shortly after handle creation.
+            BeginInvoke(ApplyDpiMetrics);
             // Defer until the owning form's DPI scale pass has fully landed,
             // then snapshot every page child's anchor margins and re-apply
             // them — hidden pages would otherwise come out mispositioned.
@@ -333,21 +336,6 @@ namespace DarkUI.Controls
                 CaptureAnchorMargins();
                 if (SelectedPage != null) ApplyAnchorMargins(SelectedPage);
             });
-        }
-
-        protected override void OnSelectedIndexChanged(EventArgs e)
-        {
-            base.OnSelectedIndexChanged(e);
-            CaptureAnchorMargins();
-            if (SelectedPage != null) ApplyAnchorMargins(SelectedPage);
-        }
-
-        protected override void OnHandleCreated(EventArgs e)
-        {
-            base.OnHandleCreated(e);
-            ApplyDpiMetrics();
-            // The child's DPI context settles shortly after handle creation.
-            BeginInvoke(ApplyDpiMetrics);
         }
 
         protected override void OnDpiChangedAfterParent(EventArgs e)
@@ -430,6 +418,9 @@ namespace DarkUI.Controls
             if (idx == _current) return;
             _current = idx;
             ShowPageAt(idx);
+            CaptureAnchorMargins();
+            var page = idx >= 0 && idx < _pages.Count ? _pages[idx] : null;
+            if (page != null) ApplyAnchorMargins(page);
             SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
         }
 
