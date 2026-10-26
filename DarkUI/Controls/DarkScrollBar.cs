@@ -1,4 +1,4 @@
-using DarkUI.Config;
+﻿using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -502,7 +502,7 @@ namespace DarkUI.Controls
                 g.FillRectangle(b, _downArrowArea);
             }*/
 
-            // Up arrow — drawn at native size, centered in the (DPI-scaled)
+            // Up arrow â€” drawn at native size, centered in the (DPI-scaled)
             // arrow area. Stretching it to fill would over-enlarge the arrow
             // compared to the reference proportions.
             var upIcon = _upArrowHot ? ScrollIcons.scrollbar_arrow_hot : ScrollIcons.scrollbar_arrow_standard;
@@ -523,9 +523,7 @@ namespace DarkUI.Controls
                     break;
             }
 
-            g.DrawImage(upIcon,
-                                _upArrowArea.Left + (_upArrowArea.Width - upIcon.Width) / 2,
-                                _upArrowArea.Top + (_upArrowArea.Height - upIcon.Height) / 2);
+            g.DrawImage(upIcon, _upArrowArea);
 
             // Down arrow
             var downIcon = _downArrowHot ? ScrollIcons.scrollbar_arrow_hot : ScrollIcons.scrollbar_arrow_standard;
@@ -539,9 +537,7 @@ namespace DarkUI.Controls
             if (_scrollOrientation == DarkScrollOrientation.Horizontal)
                 downIcon.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
-            g.DrawImage(downIcon,
-                                _downArrowArea.Left + (_downArrowArea.Width - downIcon.Width) / 2,
-                                _downArrowArea.Top + (_downArrowArea.Height - downIcon.Height) / 2);
+            g.DrawImage(downIcon, _downArrowArea);
 
             // Draw thumb
             if (!Enabled)
@@ -561,3 +557,4 @@ namespace DarkUI.Controls
         #endregion
     }
 }
+
