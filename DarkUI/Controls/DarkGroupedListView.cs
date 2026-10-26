@@ -477,10 +477,26 @@ namespace DarkUI.Controls
         }
 
         // Row and group-header heights are 96-DPI design units; scale them
-        // or rows render half-height on scaled displays.
+        // or rows render half-height on scaled displays. Rows added before
+        // the handle existed (a hidden tab page populates lazily) captured
+        // the unscaled template, so re-apply to every existing row too.
+        // Recomputation is absolute, so repeated calls stay idempotent.
         private void ApplyDpiRowMetrics()
         {
-            _base.RowTemplate.Height = (int)Math.Round(22 * DeviceDpi / 96f);
+            int itemHeight = (int)Math.Round(22 * DeviceDpi / 96f);
+            int headerHeight = (int)Math.Round(26 * DeviceDpi / 96f);
+            bool changed = _base.RowTemplate.Height != itemHeight;
+            _base.RowTemplate.Height = itemHeight;
+            foreach (DataGridViewRow row in _base.Rows)
+            {
+                int desired = _groupRows.Contains(row.Index) ? headerHeight : itemHeight;
+                if (row.Height == desired)
+                    continue;
+                row.Height = desired;
+                changed = true;
+            }
+            if (changed)
+                UpdateScrollBarLayout();
         }
 
         private void OnThemeChanged(object sender, EventArgs e) => ApplyThemeColors();
