@@ -83,6 +83,9 @@ namespace DarkUI.Controls
                 ApplyEffectivePadding();
                 CaptureChildAnchors();
                 ApplyChildAnchors();
+                // Partial invalidation leaves stale pixels from the pre-scale
+                // layout on screen (stray header-text fragments).
+                Invalidate(true);
             });
         }
 
