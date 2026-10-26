@@ -80,21 +80,27 @@ namespace DarkUI.Controls
             base.OnLayout(e);
             // Dock-fill children must fill the content area below the header
             // bar, not the whole client — base layout ignores the painted
-            // header, so place them explicitly.
+            // header, so place them explicitly. Top-docked children are also
+            // pinned to the content top, and fill children start below them:
+            // a fill child's rectangle would otherwise cover the pinned
+            // strip (z-order favors fill children added earlier), which hid
+            // the File Viewer info label inside a black band at 2x scaling.
             int contentTop = GetContentBounds().Top;
+            int fillTop = contentTop;
             foreach (Control c in Controls)
             {
-                if (c.Dock == DockStyle.Fill)
-                    c.Bounds = GetContentBounds();
-                // Top-docked children dock at the client top, straight over
-                // the painted header band (the base padding is deliberately
-                // empty — see the constructor). .NET's dock layout ignores
-                // Margin.Top for them, so pin the child to the content top
-                // here; this layout is the one that recomputes dock bounds,
-                // so the pin re-applies on every pass.
-                else if (c.Dock == DockStyle.Top && c.Top != contentTop)
-                    c.Top = contentTop;
+                if (c.Dock == DockStyle.Top)
+                {
+                    if (c.Top != contentTop)
+                        c.Top = contentTop;
+                    fillTop = Math.Max(fillTop, contentTop + c.Height);
+                }
             }
+            var content = GetContentBounds();
+            foreach (Control c in Controls)
+                if (c.Dock == DockStyle.Fill)
+                    c.Bounds = new Rectangle(content.Left, fillTop, content.Width,
+                                             Math.Max(0, content.Bottom - fillTop));
         }
 
         public DarkSectionPanel()
