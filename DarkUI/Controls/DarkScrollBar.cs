@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -502,42 +502,35 @@ namespace DarkUI.Controls
                 g.FillRectangle(b, _downArrowArea);
             }*/
 
-            // Up arrow â€” drawn at native size, centered in the (DPI-scaled)
-            // arrow area. Stretching it to fill would over-enlarge the arrow
-            // compared to the reference proportions.
-            var upIcon = _upArrowHot ? ScrollIcons.scrollbar_arrow_hot : ScrollIcons.scrollbar_arrow_standard;
+            // Up arrow
+            var upColor = _upArrowHot ? ArrowColorHot : ArrowColorStandard;
 
             if (_upArrowClicked)
-                upIcon = ScrollIcons.scrollbar_arrow_clicked;
+                upColor = ArrowColorClicked;
 
             if (!Enabled)
-                upIcon = ScrollIcons.scrollbar_arrow_disabled;
+                upColor = ArrowColorDisabled;
 
-            switch (_scrollOrientation)
-            {
-                case DarkScrollOrientation.Vertical:
-                    upIcon.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    break;
-                case DarkScrollOrientation.Horizontal:
-                    upIcon.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                    break;
-            }
+            var upDirection = _scrollOrientation == DarkScrollOrientation.Vertical
+                ? ScrollArrowDirection.Up
+                : ScrollArrowDirection.Left;
 
-            g.DrawImage(upIcon, _upArrowArea);
+            DrawArrowGlyph(g, _upArrowArea, upDirection, upColor);
 
             // Down arrow
-            var downIcon = _downArrowHot ? ScrollIcons.scrollbar_arrow_hot : ScrollIcons.scrollbar_arrow_standard;
+            var downColor = _downArrowHot ? ArrowColorHot : ArrowColorStandard;
 
             if (_downArrowClicked)
-                downIcon = ScrollIcons.scrollbar_arrow_clicked;
+                downColor = ArrowColorClicked;
 
             if (!Enabled)
-                downIcon = ScrollIcons.scrollbar_arrow_disabled;
+                downColor = ArrowColorDisabled;
 
-            if (_scrollOrientation == DarkScrollOrientation.Horizontal)
-                downIcon.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            var downDirection = _scrollOrientation == DarkScrollOrientation.Vertical
+                ? ScrollArrowDirection.Down
+                : ScrollArrowDirection.Right;
 
-            g.DrawImage(downIcon, _downArrowArea);
+            DrawArrowGlyph(g, _downArrowArea, downDirection, downColor);
 
             // Draw thumb
             if (!Enabled)
@@ -552,6 +545,68 @@ namespace DarkUI.Controls
             {
                 g.FillRectangle(b, _thumbArea);
             }
+        }
+
+        #endregion
+
+        #region Arrow Glyph Region
+
+        private enum ScrollArrowDirection
+        {
+            Up,
+            Down,
+            Left,
+            Right
+        }
+
+        // State colors matching the retired 9×5 arrow bitmaps, so the look is
+        // unchanged apart from crispness.
+        private static readonly Color ArrowColorStandard = Color.FromArgb(92, 92, 92);
+        private static readonly Color ArrowColorHot = Color.FromArgb(122, 128, 132);
+        private static readonly Color ArrowColorClicked = Color.FromArgb(159, 178, 196);
+        private static readonly Color ArrowColorDisabled = Color.FromArgb(68, 71, 73);
+
+        // Glyph proportions from the retired 9×5 bitmaps relative to their
+        // 15-unit button: ~60% of the button across, ~36% tall.
+        private static void DrawArrowGlyph(Graphics g, Rectangle area, ScrollArrowDirection direction, Color color)
+        {
+            float cx = area.Left + area.Width / 2f;
+            float cy = area.Top + area.Height / 2f;
+            float halfW = area.Width * 0.30f;
+            float halfH = area.Height * 0.18f;
+
+            PointF tip, baseA, baseB;
+            switch (direction)
+            {
+                case ScrollArrowDirection.Up:
+                    tip = new PointF(cx, cy - halfH);
+                    baseA = new PointF(cx - halfW, cy + halfH);
+                    baseB = new PointF(cx + halfW, cy + halfH);
+                    break;
+                case ScrollArrowDirection.Left:
+                    tip = new PointF(cx - halfW, cy);
+                    baseA = new PointF(cx + halfW, cy - halfH);
+                    baseB = new PointF(cx + halfW, cy + halfH);
+                    break;
+                case ScrollArrowDirection.Right:
+                    tip = new PointF(cx + halfW, cy);
+                    baseA = new PointF(cx - halfW, cy - halfH);
+                    baseB = new PointF(cx - halfW, cy + halfH);
+                    break;
+                default: // Down
+                    tip = new PointF(cx, cy + halfH);
+                    baseA = new PointF(cx - halfW, cy - halfH);
+                    baseB = new PointF(cx + halfW, cy - halfH);
+                    break;
+            }
+
+            var previousSmoothing = g.SmoothingMode;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using (var b = new SolidBrush(color))
+            {
+                g.FillPolygon(b, new[] { tip, baseA, baseB });
+            }
+            g.SmoothingMode = previousSmoothing;
         }
 
         #endregion
