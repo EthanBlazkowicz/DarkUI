@@ -66,6 +66,10 @@ namespace DarkUI.Controls
 
         public DarkLabel()
         {
+            // Center the text vertically: designer heights are tight against
+            // the scaled font, and rows expect the label text to align with
+            // the vertical center of the control beside it (combo, checkbox).
+            TextAlign = ContentAlignment.MiddleLeft;
             ForeColor = Colors.LightText;
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
