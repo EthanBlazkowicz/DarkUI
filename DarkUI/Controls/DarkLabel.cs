@@ -88,11 +88,14 @@ namespace DarkUI.Controls
         private void ApplyDpiHeight()
         {
             if (_autoUpdateHeight || AutoSize || _isGrowing || !IsHandleCreated) return;
+            // A tiny width means the layout has not settled yet — measuring
+            // wrapped text against it produces garbage heights.
+            if (Width < Font.Height * 2) return;
             int min = Font.Height + Padding.Vertical;
             if (Text.Length > 0)
             {
                 var sz = TextRenderer.MeasureText(Text, Font,
-                    new Size(Math.Max(1, Width), int.MaxValue), TextFormatFlags.WordBreak);
+                    new Size(Width, int.MaxValue), TextFormatFlags.WordBreak);
                 min = Math.Max(min, sz.Height + Padding.Vertical + 2);
             }
             if (Height >= min) return;
