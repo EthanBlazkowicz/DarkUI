@@ -314,10 +314,15 @@ namespace DarkUI.Controls
                         Math.Max(0, pageHeight - c.Bottom));
                     continue;
                 }
-                int w = pageWidth - m.Left - m.Right;
-                int h = pageHeight - m.Top - m.Bottom;
+                // The snapshot stores insets in Width/Height (Right inset,
+                // Bottom inset). Rectangle.Right/Bottom are absolute edges
+                // (X+Width, Y+Height) — reading them here subtracted each
+                // child's own Left/Top a second time, shrinking every panel
+                // by its offset from the page origin on each page re-entry.
+                int w = pageWidth - m.X - m.Width;
+                int h = pageHeight - m.Y - m.Height;
                 if (w > 0 && h > 0)
-                    c.Bounds = new Rectangle(m.Left, m.Top, w, h);
+                    c.Bounds = new Rectangle(m.X, m.Y, w, h);
             }
         }
 
