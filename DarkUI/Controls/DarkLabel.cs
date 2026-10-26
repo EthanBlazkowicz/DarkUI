@@ -81,14 +81,20 @@ namespace DarkUI.Controls
 
         // Designer label heights are 96-DPI design units; the scaled font on
         // a high-DPI display is taller and would clip descenders. Measure the
-        // actual text and grow the label (upward, so the text's bottom edge —
-        // which sits next to the associated control — stays put).
+        // actual wrapped text at the label's current (scaled) width and grow
+        // the label upward, so its bottom edge — which sits next to the
+        // associated control — stays put. Idempotent: the measured height for
+        // a given width/DPI is stable, so repeated calls cannot creep.
         private void ApplyDpiHeight()
         {
             if (_autoUpdateHeight || AutoSize || _isGrowing || !IsHandleCreated) return;
             int min = Font.Height + Padding.Vertical;
             if (Text.Length > 0)
-                min = Math.Max(min, TextRenderer.MeasureText(Text, Font).Height + Padding.Vertical + 2);
+            {
+                var sz = TextRenderer.MeasureText(Text, Font,
+                    new Size(Math.Max(1, Width), int.MaxValue), TextFormatFlags.WordBreak);
+                min = Math.Max(min, sz.Height + Padding.Vertical + 2);
+            }
             if (Height >= min) return;
             int grown = min - Height;
             Top = Math.Max(0, Top - grown);
