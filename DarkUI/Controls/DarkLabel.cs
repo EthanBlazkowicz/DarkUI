@@ -85,10 +85,15 @@ namespace DarkUI.Controls
 
         // Designer label heights are 96-DPI design units; the scaled font on
         // a high-DPI display is taller and would clip descenders. Measure the
-        // actual wrapped text at the label's current (scaled) width and grow
-        // the label upward, so its bottom edge — which sits next to the
-        // associated control — stays put. Idempotent: the measured height for
-        // a given width/DPI is stable, so repeated calls cannot creep.
+        // actual wrapped text at the label's current (scaled) width and fit
+        // the height to it, anchored at the designed top. Growing/shrinking
+        // downward (never moving Top) keeps labels that start below a
+        // section header below it: the previous bottom-anchored growth
+        // marched Top upward and, once it clamped at 0, parked the label
+        // over the header it was drawn beside. Top-anchoring also makes the
+        // fit recover from an early over-measure taken before the layout
+        // width settled — the old grow-only path stuck at the inflated
+        // height forever.
         private void ApplyDpiHeight()
         {
             if (_autoUpdateHeight || AutoSize || _isGrowing || !IsHandleCreated) return;
@@ -102,9 +107,7 @@ namespace DarkUI.Controls
                     new Size(Width, int.MaxValue), TextFormatFlags.WordBreak);
                 min = Math.Max(min, sz.Height + Padding.Vertical + 2);
             }
-            if (Height >= min) return;
-            int grown = min - Height;
-            Top = Math.Max(0, Top - grown);
+            if (Height == min) return;
             Height = min;
         }
 
