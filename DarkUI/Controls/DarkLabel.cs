@@ -12,6 +12,9 @@ namespace DarkUI.Controls
 
         private bool _autoUpdateHeight;
         private bool _isGrowing;
+        private double _lastAppliedDesignHeight = -1;
+        private bool _hasApplied;
+        private bool _fitQueued;
 
         #endregion
 
@@ -77,10 +80,16 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            if (!DesignMode) ApplyThemeColors();
-            ApplyDpiHeight();
-            // Re-apply once the owning form's DPI scale pass has landed.
-            BeginInvoke(ApplyDpiHeight);
+            if (DesignMode) return;
+            ApplyThemeColors();
+            // Every fit is deferred: before the owning form's DPI scale pass
+            // lands, the width is still a design-unit value while the
+            // point-based font already renders scaled, so WordBreak measuring
+            // against it produces garbage (several-times-too-tall) heights.
+            // The pass itself also raises OnFontChanged mid-scale (font
+            // scaled, bounds not yet) — a direct fit there would measure at
+            // mixed scaled/unscaled geometry too.
+            QueueFit();
         }
 
         // Designer label heights are 96-DPI design units; the scaled font on
@@ -90,10 +99,35 @@ namespace DarkUI.Controls
         // downward (never moving Top) keeps labels that start below a
         // section header below it: the previous bottom-anchored growth
         // marched Top upward and, once it clamped at 0, parked the label
-        // over the header it was drawn beside. Top-anchoring also makes the
-        // fit recover from an early over-measure taken before the layout
-        // width settled — the old grow-only path stuck at the inflated
-        // height forever.
+        // over the header it was drawn beside.
+        //
+        // The FIRST fit is exact (the bounds it sees are mechanical DPI
+        // scaling, not consumer intent, and consumers tune their layouts
+        // around the fitted result). Afterwards the consumer wins: the fit
+        // grows when measured text would clip, shrinks only a height this
+        // routine applied itself (recovering an early over-measure), and
+        // never touches a height changed by consumer code. Applied heights
+        // are tracked in DESIGN units (device px × 96/DeviceDpi) so the
+        // framework's own DPI scaling of the height is still recognized as
+        // ours instead of being mistaken for a consumer change.
+        /// <summary>
+        /// Coalesces every fit request into one deferred call, so fits always
+        /// run with settled (post-scale) geometry — direct fits from
+        /// OnFontChanged/OnDpiChangedAfterParent would measure mid-scale
+        /// mixed scaled/unscaled values.
+        /// </summary>
+        private void QueueFit()
+        {
+            if (_fitQueued || !IsHandleCreated || IsDisposed) return;
+            _fitQueued = true;
+            BeginInvoke(() =>
+            {
+                _fitQueued = false;
+                if (!IsDisposed && IsHandleCreated)
+                    ApplyDpiHeight();
+            });
+        }
+
         private void ApplyDpiHeight()
         {
             if (_autoUpdateHeight || AutoSize || _isGrowing || !IsHandleCreated) return;
@@ -107,14 +141,38 @@ namespace DarkUI.Controls
                     new Size(Width, int.MaxValue), TextFormatFlags.WordBreak);
                 min = Math.Max(min, sz.Height + Padding.Vertical + 2);
             }
-            if (Height == min) return;
-            Height = min;
+
+            if (!_hasApplied)
+            {
+                // First fit — exact, recoverable afterwards.
+                _hasApplied = true;
+                _lastAppliedDesignHeight = min * 96.0 / DeviceDpi;
+                if (Height != min)
+                    Height = min;
+                return;
+            }
+
+            double currentDesignHeight = Height * 96.0 / DeviceDpi;
+            bool ours = _lastAppliedDesignHeight >= 0 &&
+                        Math.Abs(currentDesignHeight - _lastAppliedDesignHeight) < 0.5;
+
+            if (min > Height || (ours && Height != min))
+            {
+                _lastAppliedDesignHeight = min * 96.0 / DeviceDpi;
+                if (Height != min)
+                    Height = min;
+            }
+            else if (!ours)
+            {
+                // Consumer-owned height — record it as untouchable.
+                _lastAppliedDesignHeight = -1;
+            }
         }
 
         protected override void OnDpiChangedAfterParent(EventArgs e)
         {
             base.OnDpiChangedAfterParent(e);
-            ApplyDpiHeight();
+            QueueFit();
         }
 
         protected override void Dispose(bool disposing)
@@ -167,14 +225,14 @@ namespace DarkUI.Controls
         {
             base.OnTextChanged(e);
             ResizeLabel();
-            ApplyDpiHeight();
+            QueueFit();
         }
 
         protected override void OnFontChanged(EventArgs e)
         {
             base.OnFontChanged(e);
             ResizeLabel();
-            ApplyDpiHeight();
+            QueueFit();
         }
 
         protected override void OnSizeChanged(EventArgs e)

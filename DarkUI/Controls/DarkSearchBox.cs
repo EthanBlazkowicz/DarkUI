@@ -119,9 +119,11 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            if (!DesignMode) ApplyThemeColors();
+            if (DesignMode) return;
+            ApplyThemeColors();
             // Re-layout once any pending form-level DPI scaling has landed.
-            BeginInvoke(LayoutChildren);
+            if (IsHandleCreated && !IsDisposed)
+                BeginInvoke(LayoutChildren);
         }
 
         // Propagate Enabled to the inner edit so it paints its disabled

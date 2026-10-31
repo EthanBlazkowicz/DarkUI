@@ -461,6 +461,9 @@ namespace DarkUI.Controls
 
             if (Image != null)
             {
+                // The image-to-text gap is a 96-DPI design unit value; scale
+                // it like every other metric so it grows with the button.
+                int imagePadding = DpiHelper.Scale(this, ImagePadding);
                 var stringSize = g.MeasureString(Text, Font, rect.Size);
 
                 var x = ClientSize.Width / 2 - Image.Size.Width / 2;
@@ -469,16 +472,16 @@ namespace DarkUI.Controls
                 switch (TextImageRelation)
                 {
                     case TextImageRelation.ImageAboveText:
-                        textOffsetY = Image.Size.Height / 2 + ImagePadding / 2;
-                        y = y - ((int)(stringSize.Height / 2) + ImagePadding / 2);
+                        textOffsetY = Image.Size.Height / 2 + imagePadding / 2;
+                        y = y - ((int)(stringSize.Height / 2) + imagePadding / 2);
                         break;
                     case TextImageRelation.TextAboveImage:
-                        textOffsetY = (Image.Size.Height / 2 + ImagePadding / 2) * -1;
-                        y = y + (int)(stringSize.Height / 2) + ImagePadding / 2;
+                        textOffsetY = (Image.Size.Height / 2 + imagePadding / 2) * -1;
+                        y = y + (int)(stringSize.Height / 2) + imagePadding / 2;
                         break;
                     case TextImageRelation.ImageBeforeText:
-                        textOffsetX = Image.Size.Width + ImagePadding / 2;
-                        x = ImagePadding;
+                        textOffsetX = Image.Size.Width + imagePadding / 2;
+                        x = imagePadding;
                         break;
                     case TextImageRelation.TextBeforeImage:
                         x = x + (int)stringSize.Width;

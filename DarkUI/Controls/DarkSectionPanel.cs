@@ -29,6 +29,7 @@ namespace DarkUI.Controls
                     return;
 
                 _contentPadding = value;
+                ApplyEffectivePadding();
                 PerformLayout();
                 Invalidate();
             }
@@ -56,6 +57,7 @@ namespace DarkUI.Controls
                     return;
 
                 _sectionHeader = value;
+                ApplyEffectivePadding();
                 PerformLayout();
                 Invalidate();
             }
@@ -75,45 +77,22 @@ namespace DarkUI.Controls
             Invalidate(true);
         }
 
-        protected override void OnLayout(LayoutEventArgs e)
-        {
-            base.OnLayout(e);
-            // Dock-fill children must fill the content area below the header
-            // bar, not the whole client — base layout ignores the painted
-            // header, so place them explicitly. Top-docked children are also
-            // pinned to the content top, and fill children start below them:
-            // a fill child's rectangle would otherwise cover the pinned
-            // strip (z-order favors fill children added earlier), which hid
-            // the File Viewer info label inside a black band at 2x scaling.
-            int contentTop = GetContentBounds().Top;
-            int fillTop = contentTop;
-            foreach (Control c in Controls)
-            {
-                if (c.Dock == DockStyle.Top)
-                {
-                    if (c.Top != contentTop)
-                        c.Top = contentTop;
-                    fillTop = Math.Max(fillTop, contentTop + c.Height);
-                }
-            }
-            var content = GetContentBounds();
-            foreach (Control c in Controls)
-                if (c.Dock == DockStyle.Fill)
-                    c.Bounds = new Rectangle(content.Left, fillTop, content.Width,
-                                             Math.Max(0, content.Bottom - fillTop));
-        }
-
         public DarkSectionPanel()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer |
                      ControlStyles.ResizeRedraw |
                      ControlStyles.UserPaint, true);
             base.Margin = new Padding(6);
-            // base.Padding stays empty: Padding feeds the anchored-child
-            // layout's display rect, and a header-sized top term re-bases
-            // designer-positioned children into the header bar at high DPI.
-            // The header is painted; Dock-fill children are fitted to the
-            // content area in OnLayout via GetContentBounds().
+            // Child layout stays framework-driven: base.Padding insets the
+            // dock/anchor display rectangle below the painted header for ALL
+            // dock styles (Top/Left/Right/Bottom/Fill) and anchored children,
+            // exactly like upstream. ApplyEffectivePadding stores DESIGN
+            // units — the framework's DPI scaling multiplies Padding along
+            // with the children, so the layout inset and the (separately
+            // scaled) painted header height always agree. Never re-apply
+            // already-scaled padding here or on DPI change: the framework
+            // scales Padding itself, and scaling it twice doubles it.
+            ApplyEffectivePadding();
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
 
@@ -136,6 +115,23 @@ namespace DarkUI.Controls
             var right = Math.Max(left, ClientSize.Width - BorderThickness - S(_contentPadding.Right));
             var bottom = Math.Max(top, ClientSize.Height - BorderThickness - S(_contentPadding.Bottom));
             return Rectangle.FromLTRB(left, top, right, bottom);
+        }
+
+        /// <summary>
+        /// Insets the framework's layout rectangle below the painted header
+        /// plus the designer content padding, so every dock style and
+        /// anchored child respects the header. Stored in 96-DPI DESIGN
+        /// units: the framework's DPI scaling multiplies Padding together
+        /// with the children, keeping the layout inset and the (separately
+        /// scaled) painted header height in agreement at every DPI.
+        /// </summary>
+        private void ApplyEffectivePadding()
+        {
+            base.Padding = new Padding(
+                BorderThickness + _contentPadding.Left,
+                (HeaderHeight > 0 ? DefaultHeaderHeight : BorderThickness) + _contentPadding.Top,
+                BorderThickness + _contentPadding.Right,
+                BorderThickness + _contentPadding.Bottom);
         }
 
         protected override void OnEnter(EventArgs e)

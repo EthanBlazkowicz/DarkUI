@@ -301,16 +301,16 @@ namespace DarkUI.Controls
             // measures correctly at high DPI, but fixed paddings/heights
             // would leave tabs cramped and short on scaled displays.
             float dpi = DeviceDpi / 96f;
-            int minW = (int)(80 * dpi);   // minimum width
-            int pad = (int)(32 * dpi);    // 16px padding each side
-            int height = (int)(28 * dpi); // tab row height
+            int minW = (int)Math.Round(80 * dpi);  // minimum width
+            int pad = (int)Math.Round(32 * dpi);   // 16px padding each side
+            int height = (int)Math.Round(28 * dpi); // tab row height
             int maxW = minW;
             using (var g = CreateGraphics())
             {
                 for (int i = 0; i < TabCount; i++)
                 {
                     var sz = g.MeasureString(TabPages[i].Text, Font);
-                    int w = (int)sz.Width + pad;
+                    int w = (int)Math.Ceiling(sz.Width) + pad;
                     if (w > maxW) maxW = w;
                 }
             }
@@ -322,7 +322,13 @@ namespace DarkUI.Controls
         protected override void OnDpiChangedAfterParent(EventArgs e)
         {
             base.OnDpiChangedAfterParent(e);
-            AutoSizeTabs();
+            // ItemSize assignment can trigger RecreateHandle mid-DPI-walk;
+            // defer it until the message loop so sibling children finish
+            // their own before/after-parent processing first.
+            BeginInvoke(() =>
+            {
+                if (!Disposing && IsHandleCreated) AutoSizeTabs();
+            });
         }
 
         #region State

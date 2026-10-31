@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using DarkUI.Icons;
 using System;
 using System.Collections.Generic;
@@ -169,22 +169,24 @@ namespace DarkUI.Docking
                 _tabArea.Visible = _contents.Count > 1;
 
             var size = 0;
+            int docTabAreaSize = DpiHelper.Scale(this, Consts.DocumentTabAreaSize);
+            int toolTabAreaSize = DpiHelper.Scale(this, Consts.ToolWindowTabAreaSize);
 
             switch (DockArea)
             {
                 case DarkDockArea.Document:
-                    size = _tabArea.Visible ? Consts.DocumentTabAreaSize : 0;
+                    size = _tabArea.Visible ? docTabAreaSize : 0;
                     Padding = new Padding(0, size, 0, 0);
                     _tabArea.ClientRectangle = new Rectangle(Padding.Left, 0, ClientRectangle.Width - Padding.Horizontal, size);
                     break;
                 case DarkDockArea.Left:
                 case DarkDockArea.Right:
-                    size = _tabArea.Visible ? Consts.ToolWindowTabAreaSize : 0;
+                    size = _tabArea.Visible ? toolTabAreaSize : 0;
                     Padding = new Padding(0, 0, 0, size);
                     _tabArea.ClientRectangle = new Rectangle(Padding.Left, ClientRectangle.Bottom - size, ClientRectangle.Width - Padding.Horizontal, size);
                     break;
                 case DarkDockArea.Bottom:
-                    size = _tabArea.Visible ? Consts.ToolWindowTabAreaSize : 0;
+                    size = _tabArea.Visible ? toolTabAreaSize : 0;
                     Padding = new Padding(1, 0, 0, size);
                     _tabArea.ClientRectangle = new Rectangle(Padding.Left, ClientRectangle.Bottom - size, ClientRectangle.Width - Padding.Horizontal, size);
                     break;
@@ -192,7 +194,7 @@ namespace DarkUI.Docking
 
             if (DockArea == DarkDockArea.Document)
             {
-                var dropdownSize = Consts.DocumentTabAreaSize;
+                var dropdownSize = docTabAreaSize;
                 _tabArea.DropdownRectangle = new Rectangle(_tabArea.ClientRectangle.Right - dropdownSize, 0, dropdownSize, dropdownSize);
             }
 
@@ -238,7 +240,7 @@ namespace DarkUI.Docking
             if (_contents.Count <= 0)
                 return maxSize;
 
-            Size maxMinSize = new Size(Consts.ToolWindowHeaderSize, Consts.ToolWindowHeaderSize);
+            Size maxMinSize = new Size(DpiHelper.Scale(this, Consts.ToolWindowHeaderSize), DpiHelper.Scale(this, Consts.ToolWindowHeaderSize));
 
             foreach (var currContent in _contents)
             {
@@ -263,7 +265,7 @@ namespace DarkUI.Docking
             }
 
             if (_contents.Count > 1)
-                maxMinSize.Height += Consts.ToolWindowTabAreaSize;
+                maxMinSize.Height += DpiHelper.Scale(this, Consts.ToolWindowTabAreaSize);
 
             MinimumSize = maxMinSize;
 
@@ -309,8 +311,8 @@ namespace DarkUI.Docking
                 tab.ShowSeparator = true;
                 width += 1;
 
-                var y = DockArea == DarkDockArea.Document ? 0 : ClientRectangle.Height - Consts.ToolWindowTabAreaSize;
-                var height = DockArea == DarkDockArea.Document ? Consts.DocumentTabAreaSize : Consts.ToolWindowTabAreaSize;
+                var y = DockArea == DarkDockArea.Document ? 0 : ClientRectangle.Height - DpiHelper.Scale(this, Consts.ToolWindowTabAreaSize);
+                var height = DockArea == DarkDockArea.Document ? DpiHelper.Scale(this, Consts.DocumentTabAreaSize) : DpiHelper.Scale(this, Consts.ToolWindowTabAreaSize);
 
                 var tabRect = new Rectangle(_tabArea.ClientRectangle.Left + totalSize, y, width, height);
                 tab.ClientRectangle = tabRect;
