@@ -38,7 +38,7 @@ namespace DarkUI.Controls
         private bool _updateLayout;
         private int _sortCol = -1;
         private bool _sortAsc = true;
-        private int _scrollSize => Consts.ScrollBarSize;
+        private int _scrollSize => DpiHelper.Scale(this, Consts.ScrollBarSize);
 
         public event EventHandler SelectedItemChanged;
         public event Action<int, string, MouseEventArgs> GroupHeaderClicked;
@@ -464,10 +464,12 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            if (!DesignMode) ApplyThemeColors();
+            if (DesignMode) return;
+            ApplyThemeColors();
             ApplyDpiRowMetrics();
             // Re-apply once the owning form's DPI scale pass has landed.
-            BeginInvoke(ApplyDpiRowMetrics);
+            if (IsHandleCreated && !IsDisposed)
+                BeginInvoke(ApplyDpiRowMetrics);
         }
 
         protected override void OnDpiChangedAfterParent(EventArgs e)

@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -271,7 +271,7 @@ namespace DarkUI.Controls
             var g = e.Graphics;
             var rect = new Rectangle(0, 0, ClientSize.Width, ClientSize.Height);
 
-            var size = Consts.RadioButtonSize;
+            var size = DpiHelper.Scale(this, Consts.RadioButtonSize);
 
             var textColor = Colors.LightText;
             var borderColor = Colors.LightText;

@@ -51,7 +51,7 @@ namespace DarkUI.Controls
 
         private static Brush _dragDrawBrush = new HatchBrush(HatchStyle.Percent50, Color.Transparent, Colors.LightText);
 
-        private int _scrollSize => Consts.ScrollBarSize;
+        private int _scrollSize => DpiHelper.Scale(this, Consts.ScrollBarSize);
 
         public DarkDataGridView()
         {
@@ -179,7 +179,15 @@ namespace DarkUI.Controls
         // absolute (never multiplies the live value), so repeated DPI moves
         // stay idempotent. Grids that auto-size rows and group header rows
         // manage their own heights and are left alone.
+        //
+        // Consumer changes always win: a template value that differs from our
+        // last-applied one is adopted as the new design height (the library
+        // convention is that RowTemplate.Height is authored in 96-DPI design
+        // units), rows no longer carrying our last-applied height are left
+        // alone, and virtual-mode rows are never walked.
         private int _designRowHeight = -1;
+        private int _lastAppliedTemplateHeight = -1;
+        private int _lastAppliedRowHeight = -1;
 
         private void CaptureDesignRowHeight()
         {
@@ -192,6 +200,9 @@ namespace DarkUI.Controls
             if (_designRowHeight < 0 || IsDisposed || _base.AutoSizeRowsMode != DataGridViewAutoSizeRowsMode.None)
                 return;
 
+            if (_lastAppliedTemplateHeight != -1 && _base.RowTemplate.Height != _lastAppliedTemplateHeight)
+                _designRowHeight = Math.Max(1, _base.RowTemplate.Height);
+
             int desired = (int)Math.Round(_designRowHeight * DeviceDpi / 96f);
             bool changed = false;
             if (_base.RowTemplate.Height != desired)
@@ -199,13 +210,22 @@ namespace DarkUI.Controls
                 _base.RowTemplate.Height = desired;
                 changed = true;
             }
-            foreach (DataGridViewRow row in _base.Rows)
+            _lastAppliedTemplateHeight = _base.RowTemplate.Height;
+
+            if (!_base.VirtualMode)
             {
-                if (IsGroupRow(row) || row.Height == desired)
-                    continue;
-                row.Height = desired;
-                changed = true;
+                foreach (DataGridViewRow row in _base.Rows)
+                {
+                    if (IsGroupRow(row) || row.Height == desired)
+                        continue;
+                    if (_lastAppliedRowHeight != -1 && row.Height != _lastAppliedRowHeight)
+                        continue;
+                    row.Height = desired;
+                    changed = true;
+                }
             }
+            _lastAppliedRowHeight = desired;
+
             if (changed)
                 UpdateScrollBarLayout();
         }

@@ -1,43 +1,29 @@
-using System;
-using System.Windows.Forms;
-
 namespace DarkUI.Config
 {
+    /// <summary>
+    /// Fixed pixel metrics authored at 96 DPI. These are design constants:
+    /// custom-drawn controls scale them per control with
+    /// <see cref="DpiHelper.Scale(System.Windows.Forms.Control, int)"/> at the
+    /// point of use, so each control tracks its own live DPI. Never derive a
+    /// process-wide scale factor here — a frozen ratio is wrong at every DPI
+    /// except the one it was captured at and goes stale when a window moves
+    /// between monitors.
+    /// </summary>
     public static class Consts
     {
-        // These metrics were authored at 96 DPI. Scale them to the process
-        // DPI so custom-drawn controls keep their proportions on scaled
-        // displays (e.g. 4K at 200%). Evaluated once — single-DPI process.
-        private static readonly int _scale = GetScale();
+        public const int Padding = 10;
 
-        private static int GetScale()
-        {
-            try
-            {
-                using var c = new Control();
-                return Math.Max(1, (int)Math.Round(c.DeviceDpi / 96f));
-            }
-            catch
-            {
-                return 1;
-            }
-        }
+        public const int ScrollBarSize = 15;
+        public const int ArrowButtonSize = 15;
+        public const int MinimumThumbSize = 11;
 
-        private static int S(int value) => value * _scale;
+        public const int CheckBoxSize = 12;
+        public const int RadioButtonSize = 12;
 
-        public static int Padding => S(10);
-
-        public static int ScrollBarSize => S(15);
-        public static int ArrowButtonSize => S(15);
-        public static int MinimumThumbSize => S(11);
-
-        public static int CheckBoxSize => S(12);
-        public static int RadioButtonSize => S(12);
-
-        public static int ToolWindowHeaderSize => S(25);
-        public static int DocumentTabAreaSize => S(24);
-        public static int ToolWindowTabAreaSize => S(21);
-        public static int MinimumRegionSize => 80;
+        public const int ToolWindowHeaderSize = 25;
+        public const int DocumentTabAreaSize = 24;
+        public const int ToolWindowTabAreaSize = 21;
+        public const int MinimumRegionSize = 80;
 
         public static bool DisableSingleDocumentTab => true;
     }

@@ -15,7 +15,7 @@ namespace DarkUI.Controls
         private readonly DarkScrollBar _vScrollBar = new DarkScrollBar { ScrollOrientation = DarkScrollOrientation.Vertical };
         private readonly DarkScrollBar _hScrollBar = new DarkScrollBar { ScrollOrientation = DarkScrollOrientation.Horizontal };
         private readonly Timer _deferTimer = new Timer { Interval = 500 };
-        private int _scrollSize => Consts.ScrollBarSize;
+        private int _scrollSize => DpiHelper.Scale(this, Consts.ScrollBarSize);
         private bool _updateLayout;
         private bool _layoutPending;
         private bool _fittingColumns;

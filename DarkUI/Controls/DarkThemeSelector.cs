@@ -111,9 +111,11 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
+            if (DesignMode) return;
             // Re-layout once the owning form's DPI scale pass has landed —
             // it resizes this control without raising OnResize.
-            BeginInvoke(LayoutChildren);
+            if (IsHandleCreated && !IsDisposed)
+                BeginInvoke(LayoutChildren);
         }
 
         private void LayoutChildren()

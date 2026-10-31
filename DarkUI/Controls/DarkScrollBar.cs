@@ -397,17 +397,18 @@ namespace DarkUI.Controls
         public void UpdateScrollBar()
         {
             var area = ClientRectangle;
+            int arrowSize = DpiHelper.Scale(this, Consts.ArrowButtonSize);
 
             // Arrow buttons
             switch (_scrollOrientation)
             {
                 case DarkScrollOrientation.Vertical:
-                    _upArrowArea = new Rectangle(area.Left, area.Top, Consts.ArrowButtonSize, Consts.ArrowButtonSize);
-                    _downArrowArea = new Rectangle(area.Left, area.Bottom - Consts.ArrowButtonSize, Consts.ArrowButtonSize, Consts.ArrowButtonSize);
+                    _upArrowArea = new Rectangle(area.Left, area.Top, arrowSize, arrowSize);
+                    _downArrowArea = new Rectangle(area.Left, area.Bottom - arrowSize, arrowSize, arrowSize);
                     break;
                 case DarkScrollOrientation.Horizontal:
-                    _upArrowArea = new Rectangle(area.Left, area.Top, Consts.ArrowButtonSize, Consts.ArrowButtonSize);
-                    _downArrowArea = new Rectangle(area.Right - Consts.ArrowButtonSize, area.Top, Consts.ArrowButtonSize, Consts.ArrowButtonSize);
+                    _upArrowArea = new Rectangle(area.Left, area.Top, arrowSize, arrowSize);
+                    _downArrowArea = new Rectangle(area.Right - arrowSize, area.Top, arrowSize, arrowSize);
                     break;
             }
 
@@ -415,10 +416,10 @@ namespace DarkUI.Controls
             switch (_scrollOrientation)
             {
                 case DarkScrollOrientation.Vertical:
-                    _trackArea = new Rectangle(area.Left, area.Top + Consts.ArrowButtonSize, area.Width, area.Height - Consts.ArrowButtonSize * 2);
+                    _trackArea = new Rectangle(area.Left, area.Top + arrowSize, area.Width, area.Height - arrowSize * 2);
                     break;
                 case DarkScrollOrientation.Horizontal:
-                    _trackArea = new Rectangle(area.Left + Consts.ArrowButtonSize, area.Top, area.Width - Consts.ArrowButtonSize * 2, area.Height);
+                    _trackArea = new Rectangle(area.Left + arrowSize, area.Top, area.Width - arrowSize * 2, area.Height);
                     break;
             }
 
@@ -432,6 +433,11 @@ namespace DarkUI.Controls
         {
             if (ViewSize >= Maximum)
                 return;
+
+            int scrollSize = DpiHelper.Scale(this, Consts.ScrollBarSize);
+            int minThumbSize = DpiHelper.Scale(this, Consts.MinimumThumbSize);
+            // Inset between the track edge and the thumb, scaled with the rest.
+            int thumbInset = DpiHelper.Scale(this, 3);
 
             // Cap to maximum value
             var maximumValue = Maximum - ViewSize;
@@ -450,26 +456,26 @@ namespace DarkUI.Controls
                     {
                         var thumbSize = (int)(_trackArea.Height * _viewContentRatio);
 
-                        if (thumbSize < Consts.MinimumThumbSize)
-                            thumbSize = Consts.MinimumThumbSize;
+                        if (thumbSize < minThumbSize)
+                            thumbSize = minThumbSize;
 
                         var trackAreaSize = _trackArea.Height - thumbSize;
                         var thumbPosition = (int)(trackAreaSize * positionRatio);
 
-                        _thumbArea = new Rectangle(_trackArea.Left + 3, _trackArea.Top + thumbPosition, Consts.ScrollBarSize - 6, thumbSize);
+                        _thumbArea = new Rectangle(_trackArea.Left + thumbInset, _trackArea.Top + thumbPosition, scrollSize - thumbInset * 2, thumbSize);
                         break;
                     }
                 case DarkScrollOrientation.Horizontal:
                     {
                         var thumbSize = (int)(_trackArea.Width * _viewContentRatio);
 
-                        if (thumbSize < Consts.MinimumThumbSize)
-                            thumbSize = Consts.MinimumThumbSize;
+                        if (thumbSize < minThumbSize)
+                            thumbSize = minThumbSize;
 
                         var trackAreaSize = _trackArea.Width - thumbSize;
                         var thumbPosition = (int)(trackAreaSize * positionRatio);
 
-                        _thumbArea = new Rectangle(_trackArea.Left + thumbPosition, _trackArea.Top + 3, thumbSize, Consts.ScrollBarSize - 6);
+                        _thumbArea = new Rectangle(_trackArea.Left + thumbPosition, _trackArea.Top + thumbInset, thumbSize, scrollSize - thumbInset * 2);
                         break;
                     }
             }

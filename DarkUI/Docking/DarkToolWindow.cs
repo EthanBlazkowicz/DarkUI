@@ -1,4 +1,4 @@
-﻿using DarkUI.Config;
+using DarkUI.Config;
 using DarkUI.Icons;
 using System;
 using System.ComponentModel;
@@ -47,7 +47,12 @@ namespace DarkUI.Docking
                      ControlStyles.UserPaint, true);
 
             BackColor = Colors.GreyBackground;
-            base.Padding = new Padding(0, Consts.ToolWindowHeaderSize, 0, 0);
+            // Scaled once here; on later DPI changes the framework scales the
+            // existing Padding by the DPI ratio, which matches the absolute
+            // design-unit scaling used by HeaderSize within rounding of one
+            // pixel. Never re-assign here on DPI change — that would compound
+            // with the framework's own Padding scaling.
+            base.Padding = new Padding(0, DpiHelper.Scale(this, Consts.ToolWindowHeaderSize), 0, 0);
 
             UpdateCloseButton();
         }
@@ -55,6 +60,8 @@ namespace DarkUI.Docking
         #endregion
 
         #region Method Region
+
+        private int HeaderSize => DpiHelper.Scale(this, Consts.ToolWindowHeaderSize);
 
         private bool IsActive()
         {
@@ -71,13 +78,13 @@ namespace DarkUI.Docking
                 X = ClientRectangle.Left,
                 Y = ClientRectangle.Top,
                 Width = ClientRectangle.Width,
-                Height = Consts.ToolWindowHeaderSize
+                Height = HeaderSize
             };
 
             _closeButtonRect = new Rectangle
             {
                 X = ClientRectangle.Right - DockIcons.tw_close.Width - 5 - 3,
-                Y = ClientRectangle.Top + Consts.ToolWindowHeaderSize / 2 - DockIcons.tw_close.Height / 2,
+                Y = ClientRectangle.Top + HeaderSize / 2 - DockIcons.tw_close.Height / 2,
                 Width = DockIcons.tw_close.Width,
                 Height = DockIcons.tw_close.Height
             };
@@ -177,14 +184,14 @@ namespace DarkUI.Docking
 
             using (var b = new SolidBrush(bgColor))
             {
-                var bgRect = new Rectangle(0, 0, ClientRectangle.Width, Consts.ToolWindowHeaderSize);
+                var bgRect = new Rectangle(0, 0, ClientRectangle.Width, HeaderSize);
                 g.FillRectangle(b, bgRect);
             }
 
             using (var p = new Pen(darkColor))
             {
                 g.DrawLine(p, ClientRectangle.Left, 0, ClientRectangle.Right, 0);
-                g.DrawLine(p, ClientRectangle.Left, Consts.ToolWindowHeaderSize - 1, ClientRectangle.Right, Consts.ToolWindowHeaderSize - 1);
+                g.DrawLine(p, ClientRectangle.Left, HeaderSize - 1, ClientRectangle.Right, HeaderSize - 1);
             }
 
             using (var p = new Pen(lightColor))
@@ -197,14 +204,14 @@ namespace DarkUI.Docking
             // Draw icon
             if (Icon != null)
             {
-                g.DrawImage(Icon, ClientRectangle.Left + 5, ClientRectangle.Top + Consts.ToolWindowHeaderSize / 2 - Icon.Height / 2 + 1);
+                g.DrawImage(Icon, ClientRectangle.Left + 5, ClientRectangle.Top + HeaderSize / 2 - Icon.Height / 2 + 1);
                 xOffset = Icon.Width + 8;
             }
 
             // Draw text
             using (var b = new SolidBrush(Colors.LightText))
             {
-                var textRect = new Rectangle(xOffset, 0, ClientRectangle.Width - 4 - xOffset, Consts.ToolWindowHeaderSize);
+                var textRect = new Rectangle(xOffset, 0, ClientRectangle.Width - 4 - xOffset, HeaderSize);
 
                 var format = new StringFormat
                 {

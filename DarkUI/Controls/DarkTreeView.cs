@@ -17,7 +17,7 @@ namespace DarkUI.Controls
         private readonly DarkScrollBar _hScrollBar = new DarkScrollBar { ScrollOrientation = DarkScrollOrientation.Horizontal };
         private readonly Timer _deferTimer = new Timer { Interval = 500 };
         private readonly List<TreeNode> _visibleNodes = new();
-        private int _scrollSize => Consts.ScrollBarSize;
+        private int _scrollSize => DpiHelper.Scale(this, Consts.ScrollBarSize);
         private bool _updateLayout;
         private bool _layoutPending;
 
@@ -336,10 +336,12 @@ namespace DarkUI.Controls
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            if (!DesignMode) ApplyThemeColors();
+            if (DesignMode) return;
+            ApplyThemeColors();
             _tree.HandleCreated += (s, ev) => BeginInvoke(UpdateScrollBarLayout);
             _tree.ItemHeight = DpiHelper.Scale(this, 24);
-            BeginInvoke(() => _tree.ItemHeight = DpiHelper.Scale(this, 24));
+            if (IsHandleCreated && !IsDisposed)
+                BeginInvoke(() => _tree.ItemHeight = DpiHelper.Scale(this, 24));
         }
 
         protected override void OnDpiChangedAfterParent(EventArgs e)
